@@ -46,7 +46,11 @@
         />
         <CategoryAnimeSlider
           categoryTitle="Continue Watching"
-          :animes="homeFeed?.watched_animes"
+          :animes="homeFeed?.continue_watch_animes"
+        />
+        <CategoryAnimeSlider
+          categoryTitle="Upcoming Animes"
+          :animes="homeFeed?.upcoming_animes"
         />
         <CategoryAnimeSlider
           categoryTitle="Recommended"
@@ -70,7 +74,8 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
+import gql from 'graphql-tag';
+import config from '../config.json';
 import {BIconInfoCircle} from 'bootstrap-icons-vue'
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
@@ -89,8 +94,8 @@ export default {
   name: "HomeView",
   apollo: {
     homeFeed: {
-      query: () => gql`query($watchedIds: [Int], $limit: Int, $recommendationMax: Int, $date: FuzzyDateInt, $not_allowed_formats: [MediaFormat] = [MUSIC, MANGA, NOVEL, TV_SHORT]) {
-        banner_anime: Media(sort: [TRENDING_DESC, POPULARITY], endDate_greater: $date, format_not_in: $not_allowed_formats, type: ANIME, isAdult: false, status_in: [RELEASING, FINISHED], averageScore_greater: 85) {
+      query: () => gql`query($watchedIds: [Int], $continueWatchIds: [Int], $limit: Int, $recommendationMax: Int, $date: FuzzyDateInt, $banned_formats: [MediaFormat]) {
+        banner_anime: Media(sort: [TRENDING_DESC, POPULARITY], endDate_greater: $date, format_not_in: $banned_formats, type: ANIME, isAdult: false, status_in: [RELEASING, FINISHED], averageScore_greater: 80) {
           id
           genres
           bannerImage
@@ -108,7 +113,7 @@ export default {
           }
         }
         trending_animes: Page(perPage: $limit) {
-          media(sort: TRENDING_DESC, format_not_in: $not_allowed_formats, type: ANIME, isAdult: false,  status: RELEASING){
+          media(sort: TRENDING_DESC, format_not_in: $banned_formats, type: ANIME, isAdult: false,  status: RELEASING){
             id
             coverImage {
               large
@@ -119,8 +124,8 @@ export default {
             }
           }
         }
-        watched_animes: Page(perPage: $limit){
-          media(id_in: $watchedIds){
+        upcoming_animes: Page {
+          media(status: NOT_YET_RELEASED,  sort: [POPULARITY_DESC, TRENDING_DESC]){
             id
             coverImage {
               large
@@ -129,6 +134,22 @@ export default {
               english
               userPreferred
             }
+          }
+        }
+        continue_watch_animes: Page(perPage: $limit){
+          media(id_in: $continueWatchIds){
+            id
+            coverImage {
+              large
+            }
+            title {
+              english
+              userPreferred
+            }
+          }
+        }
+        recommended_animes: Page(perPage: $limit){
+          media(id_in: $watchedIds){
             recommendations(perPage: $recommendationMax) {
               nodes {
                 mediaRecommendation {
@@ -146,7 +167,7 @@ export default {
           }
         }
         popular_animes: Page(perPage: $limit) {
-          media(sort: POPULARITY_DESC, format_not_in: $not_allowed_formats, type: ANIME, isAdult: false,  status_not: NOT_YET_RELEASED){
+          media(sort: POPULARITY_DESC, format_not_in: $banned_formats, type: ANIME, isAdult: false,  status_not: NOT_YET_RELEASED){
             id
             coverImage {
               large
@@ -184,25 +205,28 @@ export default {
     }
     `,
       variables(){
-        let watchedIds = randomizeAndSlice(this.watchedAnimes);
+        let watchedIds = randomizeAndSlice(this.watchedAnimeIds);
         let date = new Date();
         let fmter = Intl.NumberFormat(undefined, {
           minimumIntegerDigits: 2,
         });
-        return { 
+        return {
+          banned_formats: config.banned_formats,
           limit: feedLimit, 
           recommendationMax: Math.max(2, Math.ceil(feedLimit / watchedIds.length)),
           watchedIds,
+          continueWatchIds: this.continueWatchAnimes.map(({animeId}) => animeId),
           date: date.getFullYear() - 1 + fmter.format(date.getMonth()) + "00"
-          }
+        }
       },
       update(data){
         let top_airing = data.top_airing.media.map(transformFields);
         let anime_movies = data.anime_movies.media.map(transformFields);
         let popular_animes = data.popular_animes.media.map(transformFields);
-        let watched_animes = data.watched_animes.media.map(transformFields);
+        let continue_watch_animes = data.continue_watch_animes.media.map(transformFields);
         let trending_animes = data.trending_animes.media.map(transformFields);
-        let recommended = watched_animes
+        let upcoming_animes = data.upcoming_animes.media.map(transformFields);
+        let recommended = data.recommended_animes.media
           .reduce((rec_list, anime) => {
             return rec_list
               .concat(
@@ -212,18 +236,29 @@ export default {
               )
               .map(transformFields);
           }, [])
-          .filter(anime => !this.watchedAnimes.includes("" + anime.id))
-        return {banner_anime: data.banner_anime, watched_animes, top_airing, anime_movies, popular_animes, trending_animes, recommended};
+          .filter(anime => !this.watchedAnimeIds.includes("" + anime.id))
+        return {
+          banner_anime: data.banner_anime,
+          continue_watch_animes,
+          top_airing,
+          upcoming_animes,
+          anime_movies,
+          popular_animes,
+          trending_animes,
+          recommended
+         };
       },
     },
   },
   created(){
     this.getWatchedAnimes();
+    this.getContinueWatchList();
   },
   data() {
     return {
       homeFeed: null,
-      watchedAnimes: []
+      watchedAnimeIds: [],
+      continueWatchAnimes: []
     };
   },
   components: {
@@ -239,9 +274,15 @@ export default {
     getWatchedAnimes() {
       sendEventAsync("db:getWatchedAnimes")
       .then(animes => {
-        this.watchedAnimes = animes.map(({animeId}) => animeId)
+        this.watchedAnimeIds = animes.map(({animeId}) => animeId)
       });
     },
+    getContinueWatchList() {
+      sendEventAsync("db:getContinueWatchAnimes")
+      .then(animes => {
+        this.continueWatchAnimes = animes;
+      })
+    }
   }
 };
 </script>

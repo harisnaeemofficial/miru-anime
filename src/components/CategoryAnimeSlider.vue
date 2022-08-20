@@ -1,5 +1,5 @@
 <template>
-  <div class="card py-1 relative" v-if="animes">
+  <div class="card py-1 relative" v-if="animes?.length > 0">
     <div class="px-5">
       <h2 class="py-3 text-xl">{{ categoryTitle }}</h2>
       <div ref="container" class="slider-container overflow-hidden">

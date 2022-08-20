@@ -3,10 +3,9 @@
         <div class="flex items-center text-lg" >
             <ul class="nav-links mx-auto flex space-x-10">
                 <router-link class="nav-link" to="/">Home</router-link>
-                <router-link class="nav-link" to="/browse/tv">TV</router-link>
-                <router-link class="nav-link" to="/browse/movies">Movies</router-link>
+                <router-link class="nav-link" to="/tv">TV</router-link>
+                <router-link class="nav-link" to="/movies">Movies</router-link>
                 <router-link class="nav-link" to="/my-list">My List</router-link>
-                <router-link class="nav-link" to="/browse/genres">Genres</router-link>
             </ul>
             <div class="grow search-container justify-end flex">
                 <form @submit="searchTitle" id="search-form" :class="{'expanded': searchBarVisible}" class="rounded-md py-1.5 pl-2 pr-3 flex items-center leading-6">

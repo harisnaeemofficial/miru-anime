@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import config from '../config.json';
 import BackLayout from "@/layouts/BackLayout.vue";
 import VideoPlayer from "@/components/VideoPlayer.vue"
 import { BIconPlayFill } from "bootstrap-icons-vue";
@@ -70,7 +71,6 @@ export default {
       watchInfo: null,
       watchedDuration: null,
       nextEpisode: null,
-      previousEpisode: null,
       storedSettings: {
         preferredSubtitleLang: "English"
       },
@@ -91,8 +91,8 @@ export default {
         this.watchInfo = decodeWatchId(this.$route.params.watchId);
         getAnimeInfo(this.watchInfo.animeId).then(anime => {
           this.nextEpisode = anime.episodes.at(this.watchInfo.episodeNumber + 1)
-          this.previousEpisode = anime.episodes.at(this.watchInfo.episodeNumber - 1)
           this.watchInfo.animeTitle = anime.title
+          this.watchInfo.animeStatus = anime.status
         })
         getEpisodeSources(this.watchInfo.episodeId).then((streamData) => {
           let subtitles = [], thumbnailTrack = [];
@@ -107,6 +107,7 @@ export default {
           this.watchInfo.subtitles = subtitles;
           this.watchInfo.skipIntro = streamData.intro
           this.watchInfo.streamUrl = streamData.sources.at(-1).url
+          this.watchInfo.watchedAll = false;
         });
         sendEventAsync("db:getEpisodeWatchTime", this.watchInfo.animeId, this.watchInfo.episodeNumber)
         .then( (response) => {
@@ -117,12 +118,16 @@ export default {
     },
     addEpisodeToWatched(ev) {
       if (this.watchedDuration == null){
+          sendEventAsync("db:addWatchedAnime", this.watchInfo.animeId).catch(() => {})
           sendEventAsync("db:addWatchedEpisode", this.watchInfo.animeId, this.watchInfo.episodeNumber, ev.target.duration)
           .then(() => this.watchedDuration = 0);
       }
     },
     updateWatchedDuration(ev){
         this.watchedDuration = ev.target.currentTime;
+        if (!this.nextEpisode && (this.watchedDuration / ev.target.duration >= config.episode_watched_ratio) && this.watchInfo.animeStatus == 'Completed' && this.watchInfo.watchedAll == false)
+          sendEventAsync("db:updateWatchedAnimeWatchedAll", this.watchInfo.animeId, true)
+          .then(()=> this.watchInfo.watchedAll = true);
         sendEventAsync("db:updateEpisodeWatchTime", this.watchInfo.animeId, this.watchInfo.episodeNumber, this.watchedDuration);
     },
     showNextEpisode(){

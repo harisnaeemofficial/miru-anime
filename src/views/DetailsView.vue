@@ -25,14 +25,11 @@
               </TruncatedTextWithMore>
             </div>
             <div class="mt-3 flex">
-              <router-link class="mr-4" v-if="anime?.status != 'Not yet aired' && anime?.episodes.length > 0" :to="'/watch/'+getContinueEpisodeId()">
+              <router-link class="mr-4" v-if="anime?.status != 'Not yet aired' && anime?.episodes.length > 0" :to="'/watch/'+playBtnState.id">
                 <PrimaryButton class="pr-9 flex items-center gap-x-1">
                   <span class="text-2xl"><BIconPlayFill/></span>
-                  <span v-if="watchedEpisodes.length == 0">
-                    Start Watching
-                  </span>
-                  <span v-else>
-                    Continue Watching
+                  <span>
+                    {{playBtnState.text}}
                   </span>
                 </PrimaryButton>
               </router-link>
@@ -44,7 +41,7 @@
       <div class="px-12">
         <div class="lg:grid lg:grid-cols-[250px_auto] gap-x-10">
           <div class="max-w-xl mt-[-250px]">
-            <div class="cover_img__wrapper">
+            <div class="cover_img__wrapper min-h-[265px]">
               <img :src="anime.image" class="lg:w-full rounded"/>
             </div>
             <div class="text-lg mt-4">
@@ -92,9 +89,9 @@
                 </div>
               </template>
             </TabNavigation>
-            <div v-else class="text-center">
+            <div v-else class="flex flex-col items-center justify-center h-full">
               <h2 class="text-3xl font-bold">Sorry no video content for this anime were found yet.</h2>
-              <p>Try again at a later date.</p>
+              <p class="text-lg">Try again at a later date.</p>
             </div>
           </div>
         </div>
@@ -106,6 +103,7 @@
 </BackLayout>
 </template>
 <script>
+import config from '../config.json';
 import gql from "graphql-tag";
 import {BIconPlayFill} from 'bootstrap-icons-vue';
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
@@ -130,7 +128,8 @@ export default {
         anime: null,
         anilistInfo: null,
         availableTabs: [],
-        watchedEpisodes: null
+        watchedEpisodes: null,
+        playBtnState: {}
       };
   },
   apollo: {
@@ -171,7 +170,7 @@ export default {
             ...transformFields(relation.node),
             relationType: relation.relationType
           }
-        }).filter( anime => anime.type == 'ANIME' && !['MUSIC', 'MANGA', 'NOVEL', 'TV_SHORT'].includes(anime.format))
+        }).filter( anime => anime.type == 'ANIME' && !config.banned_formats.includes(anime.format))
         return {relations, format: Media.format, episodes: Media.episodes}
       }
     },
@@ -188,8 +187,8 @@ export default {
       let animeId = this.$route.params.animeId;
       if (animeId){
         getAnimeInfo(animeId)
-        .then(anime => {this.anime = anime; this.getAvailableTabs()})
-        .catch(async () => this.anime = await getAnimeFromAnilistOnly(animeId));
+        .then(anime => {this.anime = anime; this.updatePlayBtnState(); this.getAvailableTabs()})
+        .catch(async () => {this.anime = await getAnimeFromAnilistOnly(animeId); this.updatePlayBtnState(); this.getAvailableTabs()});
         sendEventAsync("db:getWatchedEpisodes", animeId)
         .then( watchedEpisodes => this.watchedEpisodes = watchedEpisodes )
       }
@@ -216,11 +215,18 @@ export default {
         availableTabs.push('related')
       this.availableTabs = availableTabs;
     },
-    getContinueEpisodeId(){
-      let epNo = this.watchedEpisodes[0]?.episodeNumber || 0;
-      return createWatchId(this.anime.episodes[epNo]?.id, epNo, this.anime.id)
+    updatePlayBtnState(){
+      let btnText = 'Start Watching';
+      let currentEp = this.watchedEpisodes[0]
+      let epNo = (config.episode_watched_ratio > currentEp?.watchTime / currentEp?.episodeDuration ? currentEp?.episodeNumber: (currentEp?.episodeNumber + 1) % this.anime.episodes.length) || 0;
+      let epId = this.anime.episodes[epNo]?.id
+      if (this.watchedEpisodes.length > 0 && epNo == 0) {
+        btnText = 'Watch Again'
+      } else if (this.watchedEpisodes.length > 0){
+        btnText = 'Continue Watching'
+      }
+      this.playBtnState  = { id: createWatchId(epId, epNo, this.anime.id), text: btnText}
     },
-    createWatchId
   },
   components: {
     CategoryAnimeSlider,
