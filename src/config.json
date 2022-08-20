@@ -1,0 +1,4 @@
+{
+    "anilist_graphql_api": "https://graphql.anilist.co",
+    "unaallowed_formats": ["MUSIC", "MANGA", "NOVEL", "TV_SHORT"]
+}
