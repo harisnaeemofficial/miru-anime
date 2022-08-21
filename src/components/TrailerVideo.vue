@@ -1,5 +1,5 @@
 <template>
-  <iframe v-if="trailer && trailer.id" class="trailer-iframe" :src="`//www.youtube.com/embed/${trailer.id}`" frameborder="0" allowfullscreen>
+  <iframe v-if="trailer && trailer.id" class="trailer-iframe" :src="`https://www.youtube.com/embed/${trailer.id}`" frameborder="0" allowfullscreen>
   </iframe>
   <h1 class="text-2xl text-center" v-else>
     Trailer Not found
