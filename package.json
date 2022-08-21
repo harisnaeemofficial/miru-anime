@@ -1,6 +1,8 @@
 {
   "name": "miru-anime",
   "version": "0.1.0",
+  "author": "vanelk",
+  "description": "An electron app that allows you to watch animes",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
