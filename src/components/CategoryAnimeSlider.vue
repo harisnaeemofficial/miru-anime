@@ -60,7 +60,7 @@ export default {
     this.setState();
     window.addEventListener('resize', this.setState);
   },
-  beforeUnmount(){
+  unmounted(){
     window.removeEventListener('resize', this.setState);
   }
 };

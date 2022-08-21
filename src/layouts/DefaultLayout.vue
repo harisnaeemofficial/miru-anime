@@ -5,6 +5,7 @@
                 <router-link class="nav-link" to="/">Home</router-link>
                 <router-link class="nav-link" to="/tv">TV</router-link>
                 <router-link class="nav-link" to="/movies">Movies</router-link>
+                <router-link class="nav-link" to="/release-calendar">Release Calendar</router-link>
                 <router-link class="nav-link" to="/my-list">My List</router-link>
             </ul>
             <div class="grow search-container justify-end flex">

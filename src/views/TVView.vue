@@ -1,7 +1,7 @@
 <template>
   <DefaultLayout>
-    <div class="tv-view-container default-layout-main">
-        <h2 class="mt-12">TV</h2>
+    <div class="tv-view-container default-layout-main pt-4">
+        <h2 class="text-3xl mb-12">TV</h2>
     </div>
   </DefaultLayout>
 </template>

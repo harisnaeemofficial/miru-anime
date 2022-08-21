@@ -23,6 +23,11 @@ const routes = [
         component: () => import('../views/MyListView.vue')
     },
     {
+        path: '/release-calendar',
+        name: 'release calendar',
+        component: () => import('../views/ReleaseCalendarView.vue')
+    },
+    {
         path: '/details/:animeId',
         name: 'details',
         component: () => import('../views/DetailsView.vue')

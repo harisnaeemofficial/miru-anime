@@ -378,11 +378,11 @@ export default {
       }
     },
   },
-  created() {
+  mounted() {
     window.addEventListener("mouseup", this.handleMouseUp);
     window.addEventListener("keydown", this.handleKeyDown);
   },
-  onBeforeUnmount() {
+  unmounted() {
     window.removeEventListener("mouseup", this.handleMouseUp);
     window.removeEventListener("keydown", this.handleKeyDown);
   },
