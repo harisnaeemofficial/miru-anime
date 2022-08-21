@@ -1,7 +1,13 @@
 module.exports = {
   pluginOptions: {
     electronBuilder: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      builderOptions: {
+        publish: ['github'],
+        win: {
+          icon: './public/favicon.ico'
+        },
+      }
     }
   }
 }

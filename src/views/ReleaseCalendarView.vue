@@ -2,9 +2,9 @@
   <DefaultLayout>
     <div class="default-layout-main pt-4">
       <div class="grid grid-cols-7 gap-x-8 justify-between">
-        <div v-for="day in 7" :key="day">
+        <div v-for="(n,day) in 7" :key="n">
           <div class="text-lg">
-            {{ formatDate(addDaysToDate(monday, day)) }}
+            {{ formatDate(addDaysToDate(start, day)) }}
           </div>
           <div class="border-l border-l-gray-500 px-4">
             <div
@@ -40,65 +40,31 @@
 <script>
 import config from "../config.json";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
-import gql from "graphql-tag";
+import { getWeekAiringSchedule } from "../libs/anime-lib";
 export default {
   data() {
     let today = new Date();
-    let monday = new Date(
+    let start = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate() - today.getDay()
+      today.getDate()
     );
     return {
       weekSchedule: [],
-      today,
-      monday,
+      start,
     };
   },
-  apollo: {
-    weekSchedule: {
-      query: () => gql`
-        query ($monday: Int, $sunday: Int) {
-          weekSchedule: Page {
-            airingSchedules(
-              airingAt_greater: $monday
-              airingAt_lesser: $sunday
-              sort: TIME_DESC
-            ) {
-              episode
-              airingAt
-              media {
-                id
-                format
-                isAdult
-                coverImage {
-                  medium
-                }
-                title {
-                  romaji
-                  english
-                  native
-                  userPreferred
-                }
-              }
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          monday: this.monday.getTime() / 1000,
-          sunday:
-            new Date(
-              this.monday.getFullYear(),
-              this.monday.getMonth(),
-              this.monday.getDate() + 7
-            ).getTime() / 1000,
-          banned_formats: config.banned_formats,
-        };
-      },
-      update(data) {
-        return data.weekSchedule.airingSchedules
+  mounted() {
+    this.fetchAiringSchedule();
+  },
+  components: { DefaultLayout },
+  methods: {
+    fetchAiringSchedule() {
+      getWeekAiringSchedule(
+        this.start.getTime() / 1000,
+        this.addDaysToDate(this.start, 7).getTime() / 1000
+      ).then((schedules) => {
+        this.weekSchedule = schedules
           .map((schedule) => {
             return {
               ...schedule,
@@ -110,11 +76,8 @@ export default {
               !config.banned_formats.includes(schedule.media.format) &&
               !schedule.media.isAdult
           );
-      },
+      });
     },
-  },
-  components: { DefaultLayout },
-  methods: {
     addDaysToDate(date, days) {
       let nDate = new Date(date);
       nDate.setDate(nDate.getDate() + days);

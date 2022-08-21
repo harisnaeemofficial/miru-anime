@@ -19,6 +19,7 @@
     "apollo-boost": "^0.4.9",
     "bootstrap-icons-vue": "^1.8.1",
     "core-js": "^3.8.3",
+    "electron-updater": "^5.2.1",
     "graphql": "^16.5.0",
     "graphql-tag": "^2.12.6",
     "hls.js": "^1.2.0",

@@ -3,7 +3,7 @@ import { META, ANIME } from "@consumet/extensions";
 import {
     anilistMediaDetailQuery,
   } from '@consumet/extensions/dist/utils/utils';
-
+import anilistAiringScheduleQuery from '../queries/scheduleQuery';
 const anime_provider = new ANIME.Zoro();
 const anilist = new META.Anilist(anime_provider);
 
@@ -12,6 +12,25 @@ export async function getAnimeInfo(animeId){
 }
 export async function getEpisodeSources(episodeId){
     return await anime_provider.fetchEpisodeSources(episodeId);
+}
+export async function getWeekAiringSchedule(start, end){
+  let hasNextPage = true, page = 1, airingSchedules = [];
+  do {
+    const options = {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      query: anilistAiringScheduleQuery(start, end, page),
+    };
+    const { data } = await axios.post(anilist.anilistGraphqlUrl, options).catch(() => {
+      throw new Error('Schedule not found');
+    });
+    hasNextPage = data.data.weekSchedule.pageInfo.hasNextPage;
+    page++;
+    airingSchedules = airingSchedules.concat(data.data.weekSchedule.airingSchedules)
+  } while(hasNextPage);
+  return airingSchedules;
 }
 export async function getAnimeFromAnilistOnly(animeId){
     const animeInfo = {
