@@ -48,7 +48,12 @@ export default {
 
 <style>
 .tab-active {
-    @apply text-white bg-blue-600;
+    @apply relative;
+}
+.tab-active::after {
+    content: '';
+    bottom: -1.5rem;
+    @apply w-full left-0.5 absolute h-3 bg-primary-green;
 }
 .tab {
     @apply capitalize px-7 py-2 rounded-lg text-xl;

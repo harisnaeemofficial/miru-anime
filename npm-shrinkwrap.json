@@ -1,6 +1,6 @@
 {
   "name": "miru-anime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -1610,7 +1610,7 @@
       }
     },
     "@consumet/extensions": {
-      "version": "git+https://github.com/consumet/consumet.ts.git#e40834250ea3ca5a766c49c20be7d1333a5c638a",
+      "version": "git+https://github.com/consumet/consumet.ts.git#b8c61683378369ef4136ff62c7a0a1998e827bed",
       "from": "git+https://github.com/consumet/consumet.ts.git",
       "requires": {
         "ascii-url-encoder": "^1.2.0",

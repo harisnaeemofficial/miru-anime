@@ -1,6 +1,6 @@
 {
   "name": "miru-anime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "vanelk",
   "description": "An electron app that allows you to watch animes",
   "private": true,
@@ -16,7 +16,7 @@
   "main": "background.js",
   "dependencies": {
     "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
-    "@consumet/extensions": "https://github.com/consumet/consumet.ts.git",
+    "@consumet/extensions": "git+https://github.com/consumet/consumet.ts.git",
     "@vue/apollo-option": "^4.0.0-alpha.20",
     "apollo-boost": "^0.4.9",
     "bootstrap-icons-vue": "^1.8.1",
