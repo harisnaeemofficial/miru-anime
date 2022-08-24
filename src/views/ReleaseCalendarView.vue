@@ -2,15 +2,16 @@
   <DefaultLayout>
     <div class="default-layout-main pt-4">
       <div class="grid grid-cols-7 gap-x-8 justify-between">
-        <div v-for="(n,day) in 7" :key="n">
+        <div v-for="(n, day) in 7" :key="n">
           <div class="text-lg">
             {{ formatDate(addDaysToDate(start, day)) }}
           </div>
           <div class="border-l border-l-gray-500 px-4">
             <div
               class="my-7 relative schedule-item"
+              :class="{'active': today > schedule.airingAt}"
               v-for="(schedule, index) in weekSchedule
-                ?.filter((schedule) => schedule.airingAt.getDay() == day)
+                ?.filter((schedule) => schedule.airingAt.getDate() == start.getDate() + day)
                 ?.sort((schedule) => schedule.airingAt)
                 .reverse()"
               :key="index"
@@ -52,6 +53,7 @@ export default {
     return {
       weekSchedule: [],
       start,
+      today
     };
   },
   mounted() {
@@ -105,8 +107,8 @@ export default {
 .schedule-item:before {
   content: "";
   display: block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  aspect-ratio: 1/1;
   border-radius: 50%;
   margin-left: -18px;
   margin-top: 3px;
@@ -122,7 +124,10 @@ export default {
 .schedule-item:hover img {
   @apply scale-100;
 }
-.schedule-item:hover::before {
-  @apply bg-blue-500;
+.schedule-item.active::before {
+  @apply bg-primary-green;
+}
+.schedule-item:not(.active):hover::before {
+  @apply bg-red-500;
 }
 </style>

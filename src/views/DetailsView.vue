@@ -1,91 +1,97 @@
 <template>
   <BackLayout>
     <div class="details">
-      <div v-if="anime">
-        <AnimeBanner :bannerImage="anime.cover">
-          <div class="px-5">
-            <h1 class="text-5xl font-bold line-clamp-1">
-              {{ anime.title?.english || anime.title?.romaji }}
-            </h1>
-            <div class="ml-[250px] mt-9 px-9">
-              <div>
-                <TagBadge v-for="genre in anime.genres" :key="genre">{{
-                  genre
-                }}</TagBadge>
+      <ShimmerBox v-if="$apollo.loading || isLoading" height="28rem" />
+      <AnimeBanner v-else :bannerImage="anime.cover">
+        <div class="px-5">
+          <h1 class="text-5xl font-bold line-clamp-1">
+            {{ anime.title?.english || anime.title?.romaji }}
+          </h1>
+          <div class="ml-[250px] mt-9 px-9">
+            <div>
+              <TagBadge v-for="genre in anime.genres" :key="genre">{{
+                genre
+              }}</TagBadge>
+              <span class="dot" />
+              <span class="text-lg text-bold">{{ anilistInfo?.format }}</span>
+              <span class="dot" />
+              <span class="text-lg text-bold">{{ anime.releaseDate }}</span>
+              <span v-if="anime.duration">
                 <span class="dot" />
-                <span class="text-lg text-bold">{{ anilistInfo?.format }}</span>
-                <span class="dot" />
-                <span class="text-lg text-bold">{{ anime.releaseDate }}</span>
-                <span v-if="anime.duration">
-                  <span class="dot" />
-                  <span class="text-lg text-bold">{{ anime.duration }}m</span>
-                </span>
+                <span class="text-lg text-bold">{{ anime.duration }}m</span>
+              </span>
+            </div>
+            <div class="mt-3">
+              <TruncatedTextWithMore :lines="5">
+                <template v-slot:text>
+                  <span v-html="anime.description" />
+                </template>
+              </TruncatedTextWithMore>
+            </div>
+            <div class="mt-3 flex">
+              <router-link
+                class="mr-4"
+                v-if="
+                  anime?.status != 'Not yet aired' &&
+                  anime?.episodes?.length > 0
+                "
+                :to="'/watch/' + playBtnState.id"
+              >
+                <PrimaryButton class="pr-9 flex items-center gap-x-1">
+                  <span class="text-2xl"><BIconPlayFill /></span>
+                  <span>
+                    {{ playBtnState.text }}
+                  </span>
+                </PrimaryButton>
+              </router-link>
+              <WatchListButton :id="anime.id" />
+            </div>
+          </div>
+        </div>
+      </AnimeBanner>
+      <div class="px-12">
+        <div class="lg:grid lg:grid-cols-[250px_auto] gap-x-10">
+          <div class="max-w-xl mt-[-250px]">
+            <div class="cover_img__wrapper min-h-[265px]">
+              <ShimmerBox v-if="$apollo.loading || isLoading" height="300px" />
+              <img
+                v-else
+                :src="anime.image"
+                class="w-[250px] lg:w-full rounded"
+              />
+            </div>
+            <div class="mt-4 flex flex-col gap-y-2" v-if="$apollo.loading || isLoading">
+              <ShimmerBox v-for="i in 6" :key="i" height="2rem" />
+            </div>
+            <div v-else class="text-lg mt-4">
+              <div v-for="(name, language, index) in anime.title" :key="index">
+                <div class="py-0.5" v-if="language != 'userPreferred' && name">
+                  <b class="capitalize">{{ language }} Name:</b> {{ name }}
+                </div>
               </div>
-              <div class="mt-3">
-                <TruncatedTextWithMore :lines="5">
-                  <template v-slot:text>
-                    <span v-html="anime.description" />
-                  </template>
-                </TruncatedTextWithMore>
+              <div
+                v-if="
+                  anime.nextAiringEpisode && anime.status == 'Not yet aired'
+                "
+                class="py-0.5"
+              >
+                <b>Release Date:</b>
+                {{ new Date(anime.nextAiringEpisode.airingTime * 1000) }}
               </div>
-              <div class="mt-3 flex">
-                <router-link
-                  class="mr-4"
-                  v-if="
-                    anime?.status != 'Not yet aired' &&
-                    anime?.episodes?.length > 0
-                  "
-                  :to="'/watch/' + playBtnState.id"
-                >
-                  <PrimaryButton class="pr-9 flex items-center gap-x-1">
-                    <span class="text-2xl"><BIconPlayFill /></span>
-                    <span>
-                      {{ playBtnState.text }}
-                    </span>
-                  </PrimaryButton>
-                </router-link>
-                <WatchListButton :id="anime.id" />
+              <div class="py-0.5"><b>Status:</b> {{ anime.status }}</div>
+              <div v-if="anime.rating" class="py-0.5">
+                <b>Average Score:</b> {{ anime.rating }}%
+              </div>
+              <div class="py-0.5">
+                <b>Studios:</b> {{ anime.studios.join(", ") }}
               </div>
             </div>
           </div>
-        </AnimeBanner>
-        <div class="px-12">
-          <div class="lg:grid lg:grid-cols-[250px_auto] gap-x-10">
-            <div class="max-w-xl mt-[-250px]">
-              <div class="cover_img__wrapper min-h-[265px]">
-                <img :src="anime.image" class="w-[250px] lg:w-full rounded" />
-              </div>
-              <div class="text-lg mt-4">
-                <div
-                  v-for="(name, language, index) in anime.title"
-                  :key="index"
-                >
-                  <div
-                    class="py-0.5"
-                    v-if="language != 'userPreferred' && name"
-                  >
-                    <b class="capitalize">{{ language }} Name:</b> {{ name }}
-                  </div>
-                </div>
-                <div
-                  v-if="
-                    anime.nextAiringEpisode && anime.status == 'Not yet aired'
-                  "
-                  class="py-0.5"
-                >
-                  <b>Release Date:</b>
-                  {{ new Date(anime.nextAiringEpisode.airingTime * 1000) }}
-                </div>
-                <div class="py-0.5"><b>Status:</b> {{ anime.status }}</div>
-                <div v-if="anime.rating" class="py-0.5">
-                  <b>Average Score:</b> {{ anime.rating }}%
-                </div>
-                <div class="py-0.5">
-                  <b>Studios:</b> {{ anime.studios.join(", ") }}
-                </div>
-              </div>
-            </div>
-            <div class="mt-1">
+          <div class="mt-1">
+          <div class="mt-4" v-if="$apollo.loading || isLoading">
+            <ShimmerBox height="70vh"/>
+          </div>
+            <div v-else>
               <TabNavigation
                 v-if="availableTabs.length > 0"
                 :tabs="availableTabs"
@@ -107,9 +113,9 @@
                         :episode="{
                           image: anime.image,
                           number: anime.nextAiringEpisode.episode,
-                          description: `Episode ${
-                            anime.nextAiringEpisode.episode
-                          } 
+                          description: `${
+                            anime.title.english || anime.title.romaji
+                          } episode ${anime.nextAiringEpisode.episode} 
                           ${
                             anilistInfo?.episodes
                               ? 'of ' + anilistInfo?.episodes
@@ -172,8 +178,9 @@
               </div>
             </div>
           </div>
+        </div>
+        <div v-if="anime">
           <CategoryAnimeSlider
-            v-if="anime.recommendations?.length > 0"
             :animes="anime.recommendations"
             categoryTitle="More like this"
           />
@@ -194,17 +201,19 @@ import BackLayout from "@/layouts/BackLayout.vue";
 import TruncatedTextWithMore from "@/components/TruncatedTextWithMore.vue";
 import TrailerVideo from "@/components/TrailerVideo.vue";
 import TabNavigation from "@/components/TabNavigation.vue";
-import { getAnimeInfo } from "@/libs/anime-lib";
+import { getAnimeInfo, getAnimeFromAnilistOnly } from "@/libs/anime-lib";
 import { createWatchId, transformFields } from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
 import WatchListButton from "@/components/WatchListButton.vue";
 import EpisodesList from "@/components/EpisodesList.vue";
 import EpisodeItem from "@/components/EpisodeItem.vue";
+import ShimmerBox from "@/components/ShimmerBox.vue";
 
 export default {
   name: "DetailsView",
   data() {
     return {
+      isLoading: true,
       anime: null,
       anilistInfo: null,
       availableTabs: [],
@@ -266,13 +275,19 @@ export default {
   },
   methods: {
     getAnime() {
+      this.isLoading = true;
       let animeId = this.$route.params.animeId;
       if (animeId) {
-        getAnimeInfo(animeId).then((anime) => {
-          this.anime = anime;
-          this.updatePlayBtnState();
-          this.getAvailableTabs();
-        });
+        getAnimeInfo(animeId)
+          .then((anime) => (this.anime = anime))
+          .catch(
+            async () => (this.anime = await getAnimeFromAnilistOnly(animeId))
+          )
+          .then(() => {
+            this.isLoading = false;
+            this.updatePlayBtnState();
+            this.getAvailableTabs();
+          });
         sendEventAsync("db:getWatchedEpisodes", animeId).then(
           (watchedEpisodes) => (this.watchedEpisodes = watchedEpisodes)
         );
@@ -287,7 +302,7 @@ export default {
       let time = "";
       if (days > 0) time += days + " days, ";
       if (hours > 0) time += hours + " hours, ";
-      time += minutes > 0 ? minutes + " mins" : seconds + " seconds";
+      time += minutes > 0 ? minutes + " mins" : (seconds % 60) + " seconds";
       return time;
     },
     getAvailableTabs() {
@@ -322,7 +337,7 @@ export default {
         }
       }
       this.playBtnState = {
-        id: epId ?? createWatchId(epId, epNo, this.anime.id),
+        id: epId && createWatchId(epId, epNo, this.anime.id),
         text: btnText,
       };
     },
@@ -340,6 +355,7 @@ export default {
     WatchListButton,
     EpisodesList,
     EpisodeItem,
-  },
+    ShimmerBox,
+},
 };
 </script>

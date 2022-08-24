@@ -1,15 +1,24 @@
 <template>
-  <button @click="history_back" class="absolute left-3 top-3 z-20">
-    <BIconArrowLeft class="text-4xl text-white font-bold"/>
+<div class="absolute px-3 py-3 flex w-full justify-between top-0 left-0 z-20 text-white font-bold">
+  <button @click="history_back">
+    <BIconArrowLeft class="text-4xl"/>
   </button>
+  <button @click="$router.push('/' + (closePath ?? ''))">
+    <BIconX class="text-5xl"/>
+  </button>
+</div>
 <slot/>
 </template>
 
 <script>
-import { BIconArrowLeft } from 'bootstrap-icons-vue';
+import { BIconArrowLeft, BIconX } from 'bootstrap-icons-vue';
 export default {
     components: {
-        BIconArrowLeft
+        BIconArrowLeft,
+        BIconX
+    },
+    props: {
+      closePath: String
     },
     methods: {
         history_back(){

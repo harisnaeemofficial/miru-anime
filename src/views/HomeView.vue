@@ -1,78 +1,94 @@
 <template>
   <DefaultLayout :addScrollEvents="true">
-    <div class="pb-2">
-      <TrailerBanner
-        :trailer="homeFeed?.banner_anime.trailer"
-        :thumbnail="homeFeed?.banner_anime.bannerImage"
-      >
-        <div class="banner_anime_info w-1/2 px-5">
-          <h1 class="text-5xl font-bold">
-            {{
-              homeFeed?.banner_anime.title.english ||
-              homeFeed?.banner_anime.title.userPreferred
-            }}
-          </h1>
-          <div class="mt-4">
-            <TagBadge
-              v-for="genre in homeFeed?.banner_anime.genres"
-              :key="genre"
-              >{{ genre }}</TagBadge
-            >
-            <span class="dot" />
-            <span class="text-lg text-bold">{{
-              homeFeed?.banner_anime.format
-            }}</span>
-            <span class="dot" />
-            <span class="text-lg text-bold">{{
-              homeFeed?.banner_anime.seasonYear
-            }}</span>
-          </div>
-          <p
-            class="text-lg mt-2 line-clamp-6"
-            v-html="`<span>${homeFeed?.banner_anime.description}</span>`"
-          />
-          <div class="mt-3 flex gap-x-2">
-            <router-link :to="'/details/' + homeFeed?.banner_anime.id">
-              <PrimaryButton>
-                <span class="flex items-center gap-x-2">
-                  <BIconInfoCircle />
-                  <span class="mr-2"> View Details </span>
-                </span>
-              </PrimaryButton>
-            </router-link>
-            <WatchListButton :id="homeFeed?.banner_anime.id" />
+    <div v-if="$apollo.loading" class="flex px-12 mt-28 flex-col gap-y-10">
+      <div v-for="i in 3" :key="i">
+        <ShimmerBox height="1.5rem" width="150px" />
+        <div class="mt-4 flex gap-x-5">
+          <div v-for="i in 8" class="overflow-hidden" :key="i">
+            <ShimmerBox width="192px" height="210px" />
           </div>
         </div>
-      </TrailerBanner>
-      <div class="mt-3 bg-white px-4">
-        <CategoryAnimeSlider
-          categoryTitle="Recent Releases"
-          :animes="homeFeed?.trending_animes"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="Continue Watching"
-          :animes="homeFeed?.continue_watch_animes"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="Upcoming Animes"
-          :animes="homeFeed?.upcoming_animes"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="Recommended"
-          :animes="homeFeed?.recommended"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="All Time Popular"
-          :animes="homeFeed?.popular_animes"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="Top Airing"
-          :animes="homeFeed?.top_airing"
-        />
-        <CategoryAnimeSlider
-          categoryTitle="Anime Movies"
-          :animes="homeFeed?.anime_movies"
-        />
+      </div>
+    </div>
+    <div v-else>
+      <div class="pb-2">
+        <TrailerBanner
+          :trailer="homeFeed?.banner_anime.trailer"
+          :thumbnail="homeFeed?.banner_anime.bannerImage"
+        >
+          <div class="banner_anime_info w-1/2 px-5">
+            <h1 class="text-5xl font-bold">
+              {{
+                homeFeed?.banner_anime.title.english ||
+                homeFeed?.banner_anime.title.userPreferred
+              }}
+            </h1>
+            <div class="mt-4">
+              <TagBadge
+                v-for="genre in homeFeed?.banner_anime.genres"
+                :key="genre"
+                >{{ genre }}</TagBadge
+              >
+              <span class="dot" />
+              <span class="text-lg text-bold">{{
+                homeFeed?.banner_anime.format
+              }}</span>
+              <span class="dot" />
+              <span class="text-lg text-bold">{{
+                homeFeed?.banner_anime.seasonYear
+              }}</span>
+            </div>
+            <p
+              class="text-lg mt-2 line-clamp-6"
+              v-html="`<span>${homeFeed?.banner_anime.description}</span>`"
+            />
+            <div class="mt-3 flex gap-x-2">
+              <router-link :to="'/details/' + homeFeed?.banner_anime.id">
+                <PrimaryButton>
+                  <span class="flex items-center gap-x-2">
+                    <BIconInfoCircle />
+                    <span class="mr-2"> View Details </span>
+                  </span>
+                </PrimaryButton>
+              </router-link>
+              <WatchListButton :id="homeFeed?.banner_anime.id" />
+            </div>
+          </div>
+        </TrailerBanner>
+        <div class="mt-3 bg-white px-4">
+          <CategoryAnimeSlider
+            categoryTitle="Recent Releases"
+            :animes="recently_released_animes"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Trending Now"
+            :animes="homeFeed?.trending_animes"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Continue Watching"
+            :animes="homeFeed?.continue_watch_animes"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Upcoming Animes"
+            :animes="homeFeed?.upcoming_animes"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Recommended"
+            :animes="homeFeed?.recommended"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="All Time Popular"
+            :animes="homeFeed?.popular_animes"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Top Airing"
+            :animes="homeFeed?.top_airing"
+          />
+          <CategoryAnimeSlider
+            categoryTitle="Anime Movies"
+            :animes="homeFeed?.anime_movies"
+          />
+        </div>
       </div>
     </div>
   </DefaultLayout>
@@ -87,12 +103,14 @@ import PrimaryButton from "@/components/PrimaryButton.vue";
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
 import TagBadge from "@/components/TagBadge.vue";
 import { sendEventAsync } from "@/libs/ipc-lib";
+import { getRecentEpisodes } from "@/libs/anime-lib";
 import { transformFields } from "@/libs/utils-lib";
 import WatchListButton from "@/components/WatchListButton.vue";
 import TrailerBanner from "@/components/TrailerBanner.vue";
+import ShimmerBox from "@/components/ShimmerBox.vue";
 const feedLimit = 28;
 function randomizeAndSlice(data) {
-  return [...new Set(data)].sort(() => Math.random()).slice(0, feedLimit);
+  return data.sort(() => 0.5 - Math.random()).slice(0, feedLimit);
 }
 export default {
   name: "HomeView",
@@ -107,7 +125,7 @@ export default {
           $banned_formats: [MediaFormat]
         ) {
           banner_anime: Media(
-            sort: [TRENDING_DESC, POPULARITY]
+            sort: [TRENDING_DESC, POPULARITY_DESC]
             format_not_in: $banned_formats
             type: ANIME
             isAdult: false
@@ -131,7 +149,7 @@ export default {
           }
           trending_animes: Page(perPage: $limit) {
             media(
-              sort: [TRENDING_DESC, SCORE_DESC]
+              sort: TRENDING_DESC
               format_not_in: $banned_formats
               type: ANIME
               isAdult: false
@@ -179,7 +197,7 @@ export default {
             }
           }
           recommended_animes: Page(perPage: $limit) {
-            media(id_in: $watchedIds) {
+            media(id_in: $watchedIds, sort: POPULARITY_DESC) {
               recommendations(perPage: $recommendationMax) {
                 nodes {
                   mediaRecommendation {
@@ -257,7 +275,7 @@ export default {
           banned_formats: config.banned_formats,
           limit: feedLimit,
           recommendationMax: Math.max(
-            2,
+            5,
             Math.ceil(feedLimit / watchedIds.length)
           ),
           watchedIds,
@@ -317,12 +335,14 @@ export default {
   created() {
     this.getWatchedAnimes();
     this.getContinueWatchList();
+    this.getRecentAnimeReleases();
   },
   data() {
     return {
       homeFeed: null,
       watchedAnimeIds: [],
       continueWatchAnimes: [],
+      recently_released_animes: [],
     };
   },
   components: {
@@ -333,6 +353,7 @@ export default {
     TagBadge,
     WatchListButton,
     TrailerBanner,
+    ShimmerBox,
   },
   methods: {
     getWatchedAnimes() {
@@ -343,6 +364,14 @@ export default {
     getContinueWatchList() {
       sendEventAsync("db:getContinueWatchAnimes").then((animes) => {
         this.continueWatchAnimes = animes;
+      });
+    },
+    getRecentAnimeReleases() {
+      getRecentEpisodes().then((data) => {
+        this.recently_released_animes = data.results.map((ep) => ({
+          ...ep,
+          title: { english: `${ep.title} Episode ${ep.episode}` },
+        }));
       });
     },
   },

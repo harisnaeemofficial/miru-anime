@@ -274,7 +274,7 @@ export default {
     },
     addSubtitleData(){
       this.subtitlesData.availableSubtitles = [];
-      for (let track of this.$refs.video.textTracks) {
+      for (let track of this.$refs.video?.textTracks) {
         if (track.kind == 'captions'){
           this.subtitlesData.availableSubtitles.push(track.label);
         }

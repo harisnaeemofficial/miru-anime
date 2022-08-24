@@ -1,5 +1,5 @@
 <template>
-  <BackLayout>
+  <BackLayout :closePath="'details/'+watchInfo?.animeId">
     <VideoPlayer
       :hlsSrc="watchInfo?.streamUrl"
       @ended="showNextEpisode"
