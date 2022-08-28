@@ -90,13 +90,13 @@ export default {
       if (this.$route.params.watchId) {
         this.watchInfo = decodeWatchId(this.$route.params.watchId);
         getAnimeInfo(this.watchInfo.animeId).then(anime => {
-          this.nextEpisode = anime.episodes.at(this.watchInfo.episodeNumber + 1)
+          this.nextEpisode = anime.episodes.filter((ep)=> ep.number == this.watchInfo.episodeNumber + 1).at(0)
           this.watchInfo.animeTitle = anime.title
           this.watchInfo.animeStatus = anime.status
         })
         getEpisodeSources(this.watchInfo.episodeId).then((streamData) => {
           let subtitles = [], thumbnailTrack = [];
-          for (let subtitle of streamData.subtitles){
+          for (let subtitle of (streamData.subtitles || [])){
               if (subtitle.url.includes("thumbnails/sprite")){
                 thumbnailTrack = subtitle;
                 continue;
@@ -132,7 +132,7 @@ export default {
     },
     showNextEpisode(){
       if (this.nextEpisode)
-      this.$router.push(`/watch/${createWatchId(this.nextEpisode.id, this.watchInfo.episodeNumber + 1, this.watchInfo.animeId)}`)
+      this.$router.push(`/watch/${createWatchId(this.nextEpisode.id, this.nextEpisode.number, this.watchInfo.animeId)}`)
     },
     skipIntro(){
       this.seekToTime(this.watchInfo.skipIntro.end);

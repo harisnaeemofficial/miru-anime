@@ -4,8 +4,8 @@
       <div v-for="i in 3" :key="i">
         <ShimmerBox height="1.5rem" width="150px" />
         <div class="mt-4 flex gap-x-5">
-          <div v-for="i in 8" class="overflow-hidden" :key="i">
-            <ShimmerBox width="192px" height="210px" />
+          <div v-for="i in 7" class="overflow-hidden" :key="i">
+            <ShimmerBox width="200px" height="210px" />
           </div>
         </div>
       </div>
@@ -13,37 +13,37 @@
     <div v-else>
       <div class="pb-2">
         <TrailerBanner
-          :trailer="homeFeed?.banner_anime.trailer"
-          :thumbnail="homeFeed?.banner_anime.bannerImage"
+          :trailer="homeFeed.banner_anime.trailer"
+          :thumbnail="homeFeed.banner_anime.bannerImage"
         >
-          <div class="banner_anime_info w-1/2 px-5">
+          <div class="banner_anime_info lg:w-1/2 px-5">
             <h1 class="text-5xl font-bold">
               {{
-                homeFeed?.banner_anime.title.english ||
-                homeFeed?.banner_anime.title.userPreferred
+                homeFeed.banner_anime.title.english ||
+                homeFeed.banner_anime.title.userPreferred
               }}
             </h1>
             <div class="mt-4">
               <TagBadge
-                v-for="genre in homeFeed?.banner_anime.genres"
+                v-for="genre in homeFeed.banner_anime.genres"
                 :key="genre"
                 >{{ genre }}</TagBadge
               >
               <span class="dot" />
               <span class="text-lg text-bold">{{
-                homeFeed?.banner_anime.format
+                homeFeed.banner_anime.format
               }}</span>
               <span class="dot" />
               <span class="text-lg text-bold">{{
-                homeFeed?.banner_anime.seasonYear
+                homeFeed.banner_anime.seasonYear
               }}</span>
             </div>
             <p
               class="text-lg mt-2 line-clamp-6"
-              v-html="`<span>${homeFeed?.banner_anime.description}</span>`"
+              v-html="`<span>${homeFeed.banner_anime.description}</span>`"
             />
             <div class="mt-3 flex gap-x-2">
-              <router-link :to="'/details/' + homeFeed?.banner_anime.id">
+              <router-link :to="'/details/' + homeFeed.banner_anime.id">
                 <PrimaryButton>
                   <span class="flex items-center gap-x-2">
                     <BIconInfoCircle />
@@ -51,7 +51,7 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="homeFeed?.banner_anime.id" />
+              <WatchListButton :id="homeFeed.banner_anime.id" />
             </div>
           </div>
         </TrailerBanner>
@@ -62,31 +62,31 @@
           />
           <CategoryAnimeSlider
             categoryTitle="Trending Now"
-            :animes="homeFeed?.trending_animes"
+            :animes="homeFeed.trending_animes"
           />
           <CategoryAnimeSlider
             categoryTitle="Continue Watching"
-            :animes="homeFeed?.continue_watch_animes"
+            :animes="homeFeed.continue_watch_animes"
           />
           <CategoryAnimeSlider
             categoryTitle="Upcoming Animes"
-            :animes="homeFeed?.upcoming_animes"
+            :animes="homeFeed.upcoming_animes"
           />
           <CategoryAnimeSlider
             categoryTitle="Recommended"
-            :animes="homeFeed?.recommended"
+            :animes="homeFeed.recommended"
           />
           <CategoryAnimeSlider
             categoryTitle="All Time Popular"
-            :animes="homeFeed?.popular_animes"
+            :animes="homeFeed.popular_animes"
           />
           <CategoryAnimeSlider
             categoryTitle="Top Airing"
-            :animes="homeFeed?.top_airing"
+            :animes="homeFeed.top_airing"
           />
           <CategoryAnimeSlider
             categoryTitle="Anime Movies"
-            :animes="homeFeed?.anime_movies"
+            :animes="homeFeed.anime_movies"
           />
         </div>
       </div>
@@ -293,7 +293,7 @@ export default {
           episodesObj[anime.animeId] = {
             num: anime.episodeNumber,
             completed:
-              anime.watchTime / anime.episodeDuration >=
+              (anime.watchTime / anime.episodeDuration) >=
               config.episode_watched_ratio,
           };
         }
@@ -304,7 +304,7 @@ export default {
               anime.status != "RELEASING" ||
               !episodesObj[anime.id].completed ||
               (anime.nextAiringEpisode &&
-                anime.nextAiringEpisode.episode - episodesObj[anime.id].num > 2)
+                anime.nextAiringEpisode.episode - episodesObj[anime.id].num >= 2)
           );
         let trending_animes = data.trending_animes.media.map(transformFields);
         let upcoming_animes = data.upcoming_animes.media.map(transformFields);

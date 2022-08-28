@@ -1,7 +1,7 @@
 <template>
   <ul class="text-lg flex flex-col gap-y-3">
-    <li v-for="(episode, index) in episodes" :key="episode.id">
-      <router-link :to="'/watch/' + createWatchId(episode.id, index, animeId)">
+    <li v-for="episode in episodes" :key="episode.id">
+      <router-link :to="'/watch/' + createWatchId(episode.id, episode.number, animeId)">
         <EpisodeItem :episode="episode" />
       </router-link>
     </li>
@@ -25,7 +25,7 @@ export default {
     },
     mounted(){
         for (let watchedEpisode of this.watched){
-            let episode = this.episodes[watchedEpisode.episodeNumber];
+            let episode = this.episodes.filter(ep => ep.number == watchedEpisode.episodeNumber).at(0);
             if (episode)
               episode.watchedPercentage = (watchedEpisode.watchTime / watchedEpisode.episodeDuration) * 100;
         }

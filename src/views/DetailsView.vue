@@ -44,7 +44,7 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="anime.id" />
+              <WatchListButton :id="+anime.id" />
             </div>
           </div>
         </div>
@@ -53,17 +53,35 @@
         <div class="lg:grid lg:grid-cols-[250px_auto] gap-x-10">
           <div class="max-w-xl mt-[-250px]">
             <div class="cover_img__wrapper min-h-[265px]">
-              <ShimmerBox v-if="$apollo.loading || isLoading" height="300px" />
+              <ShimmerBox
+                v-if="$apollo.loading || isLoading"
+                height="300px"
+                width="250px"
+              />
               <img
                 v-else
                 :src="anime.image"
                 class="w-[250px] lg:w-full rounded"
               />
             </div>
-            <div class="mt-4 flex flex-col gap-y-2" v-if="$apollo.loading || isLoading">
+            <div
+              class="mt-4 flex flex-col gap-y-2"
+              v-if="$apollo.loading || isLoading"
+            >
               <ShimmerBox v-for="i in 6" :key="i" height="2rem" />
             </div>
             <div v-else class="text-lg mt-4">
+              <b>Anime Provider: </b>
+              <select @change="selectProvider">
+                <option
+                  v-for="provider in provider_list"
+                  :key="provider"
+                  :value="provider"
+                  :selected="provider == selected_provider"
+                >
+                  {{ provider }}
+                </option>
+              </select>
               <div v-for="(name, language, index) in anime.title" :key="index">
                 <div class="py-0.5" v-if="language != 'userPreferred' && name">
                   <b class="capitalize">{{ language }} Name:</b> {{ name }}
@@ -88,9 +106,9 @@
             </div>
           </div>
           <div class="mt-1">
-          <div class="mt-4" v-if="$apollo.loading || isLoading">
-            <ShimmerBox height="70vh"/>
-          </div>
+            <div class="mt-4" v-if="$apollo.loading || isLoading">
+              <ShimmerBox height="70vh" />
+            </div>
             <div v-else>
               <TabNavigation
                 v-if="availableTabs.length > 0"
@@ -179,7 +197,7 @@
             </div>
           </div>
         </div>
-        <div v-if="anime">
+        <div v-if="anime && !($apollo.loading || isLoading)">
           <CategoryAnimeSlider
             :animes="anime.recommendations"
             categoryTitle="More like this"
@@ -201,7 +219,13 @@ import BackLayout from "@/layouts/BackLayout.vue";
 import TruncatedTextWithMore from "@/components/TruncatedTextWithMore.vue";
 import TrailerVideo from "@/components/TrailerVideo.vue";
 import TabNavigation from "@/components/TabNavigation.vue";
-import { getAnimeInfo, getAnimeFromAnilistOnly } from "@/libs/anime-lib";
+import {
+  getAnimeInfo,
+  getAnimeFromAnilistOnly,
+  getAllAnimeProviders,
+  setAnimeProvider,
+  getAnimeProvider,
+} from "@/libs/anime-lib";
 import { createWatchId, transformFields } from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
 import WatchListButton from "@/components/WatchListButton.vue";
@@ -219,6 +243,8 @@ export default {
       availableTabs: [],
       watchedEpisodes: [],
       playBtnState: {},
+      selected_provider: null,
+      provider_list: [],
     };
   },
   apollo: {
@@ -273,6 +299,10 @@ export default {
   created() {
     this.$watch(() => this.$route.params, this.getAnime, { immediate: true });
   },
+  mounted() {
+    this.provider_list = getAllAnimeProviders();
+    this.selected_provider = getAnimeProvider();
+  },
   methods: {
     getAnime() {
       this.isLoading = true;
@@ -293,6 +323,12 @@ export default {
         );
       }
     },
+    selectProvider(e) {
+      if (setAnimeProvider(e.target.value)) {
+        this.selected_provider = e.target.value;
+        this.getAnime();
+      }
+    },
     convertToTime(seconds) {
       let minutes = Math.floor(seconds / 60);
       let hours = Math.floor(minutes / 60);
@@ -308,7 +344,8 @@ export default {
     getAvailableTabs() {
       let availableTabs = [];
       if (
-        this.anime?.episodes?.length != 0 &&
+        this.anime?.episodes &&
+        this.anime.episodes.length != 0 &&
         this.anilistInfo?.format != "MOVIE" &&
         this.anime?.status != "Not yet aired"
       )
@@ -320,17 +357,19 @@ export default {
     updatePlayBtnState() {
       let btnText = "Start Watching";
       let currentEp = this.watchedEpisodes[0];
-      let epId = null,
-        epNo = 0;
+      let epId = null, epNo = 1;
       if (this.anime?.episodes != undefined) {
+        if (currentEp){
         epNo =
-          (config.episode_watched_ratio >
-          currentEp?.watchTime / currentEp?.episodeDuration
-            ? currentEp?.episodeNumber
-            : (currentEp?.episodeNumber + 1) % this.anime?.episodes.length) ||
-          0;
-        epId = this.anime.episodes[epNo]?.id;
-        if (this.watchedEpisodes?.length > 0 && epNo == 0) {
+          currentEp.watchTime / currentEp.episodeDuration >=
+          config.episode_watched_ratio
+            ? currentEp.episodeNumber + 1
+            : currentEp.episodeNumber;
+        }
+        epNo %= this.anime.episodes.length + 1;
+        epNo = Math.max(epNo, 1);
+        epId = this.anime.episodes.filter(ep => ep.number == epNo).at(0)?.id;
+        if (this.watchedEpisodes.length > 1 && epNo == 1) {
           btnText = "Watch Again";
         } else if (this.watchedEpisodes.length > 0) {
           btnText = "Continue Watching";
@@ -356,6 +395,6 @@ export default {
     EpisodesList,
     EpisodeItem,
     ShimmerBox,
-},
+  },
 };
 </script>

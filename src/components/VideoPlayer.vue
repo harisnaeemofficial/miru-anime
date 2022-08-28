@@ -111,7 +111,7 @@
           {{ this.videoDuration }}
         </div>
         <slot name="controlsRight" />
-         <div class="relative subtitles-container">
+         <div class="relative subtitles-container" v-if="subtitlesData.availableSubtitles.length > 0">
           <div class="subtitles-menu w-[300px] absolute bg-gray-700 right-4 bottom-7 hidden py-4">
             <span class="block px-7 py-2 hover:font-bold hover:cursor-pointer" v-for="(subtitle, index) in subtitlesData.availableSubtitles" :key="index" @click="selectLang(subtitle)">
               {{subtitle}}
@@ -298,10 +298,12 @@ export default {
     handleLoadedMetaData(ev) {
       this.$emit("loadedmetadata", ev);
       this.videoDuration = this.formatTime(ev.target.duration);
-      let thumbnailTrackUrl = ev.target.querySelector("track[kind='thumbnails']")?.src
-      fetch(thumbnailTrackUrl).then(res => res.text()).then(input=> {
-        this.addThumbnailsData(webvtt.parse(input), thumbnailTrackUrl);
-      })
+      let thumbnailTrackUrl = ev.target.querySelector("track[kind='thumbnails']")?.src;
+      if (thumbnailTrackUrl){
+        fetch(thumbnailTrackUrl).then(res => res.text()).then(input => {
+          this.addThumbnailsData(webvtt.parse(input), thumbnailTrackUrl);
+        })
+      }
       this.addSubtitleData();
     },
     handleTimeUpdate(ev) {

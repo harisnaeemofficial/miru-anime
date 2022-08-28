@@ -3,7 +3,7 @@
   <button @click="history_back">
     <BIconArrowLeft class="text-4xl"/>
   </button>
-  <button @click="$router.push('/' + (closePath ?? ''))">
+  <button @click="$router.replace('/' + (closePath ?? ''))">
     <BIconX class="text-5xl"/>
   </button>
 </div>
