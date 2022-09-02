@@ -11,7 +11,7 @@
               class="my-7 relative schedule-item"
               :class="{'active': today > schedule.airingAt}"
               v-for="(schedule, index) in weekSchedule
-                ?.filter((schedule) => schedule.airingAt.getDate() == start.getDate() + day)
+                ?.filter((schedule) => schedule.airingAt.getDate() == addDaysToDate(start, day).getDate())
                 ?.sort((schedule) => schedule.airingAt)
                 .reverse()"
               :key="index"

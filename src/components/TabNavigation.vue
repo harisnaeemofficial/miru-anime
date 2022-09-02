@@ -53,7 +53,8 @@ export default {
 .tab-active::after {
     content: '';
     bottom: -1.5rem;
-    @apply w-full left-0.5 absolute h-3 bg-primary-green;
+    @apply w-full left-0.5 absolute h-3;
+    background-color: var(--theme-color, theme('colors.primary-green'));
 }
 .tab {
     @apply capitalize px-7 py-2 rounded-lg text-xl;

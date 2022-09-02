@@ -25,7 +25,7 @@ export default {
     },
     mounted(){
         for (let watchedEpisode of this.watched){
-            let episode = this.episodes.filter(ep => ep.number == watchedEpisode.episodeNumber).at(0);
+            let episode = this.episodes.find(ep => ep.number == watchedEpisode.episodeNumber);
             if (episode)
               episode.watchedPercentage = (watchedEpisode.watchTime / watchedEpisode.episodeDuration) * 100;
         }

@@ -90,7 +90,7 @@ export default {
       if (this.$route.params.watchId) {
         this.watchInfo = decodeWatchId(this.$route.params.watchId);
         getAnimeInfo(this.watchInfo.animeId).then(anime => {
-          this.nextEpisode = anime.episodes.filter((ep)=> ep.number == this.watchInfo.episodeNumber + 1).at(0)
+          this.nextEpisode = anime.episodes.find((ep)=> ep.number == this.watchInfo.episodeNumber + 1);
           this.watchInfo.animeTitle = anime.title
           this.watchInfo.animeStatus = anime.status
         })

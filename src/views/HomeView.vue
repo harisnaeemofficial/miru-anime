@@ -2,10 +2,13 @@
   <DefaultLayout :addScrollEvents="true">
     <div v-if="$apollo.loading" class="flex px-12 mt-28 flex-col gap-y-10">
       <div v-for="i in 3" :key="i">
-        <ShimmerBox height="1.5rem" width="150px" />
+        <ShimmerBox height="1.5rem" width="200px" />
         <div class="mt-4 flex gap-x-5">
           <div v-for="i in 7" class="overflow-hidden" :key="i">
-            <ShimmerBox width="200px" height="210px" />
+            <ShimmerBox width="185px" height="256px" />
+            <div class="mt-3">
+              <ShimmerBox height="1rem" width="120px" />
+            </div>
           </div>
         </div>
       </div>
@@ -156,7 +159,12 @@ export default {
               status: RELEASING
             ) {
               id
+              genres
+              format
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               title {
@@ -171,7 +179,12 @@ export default {
               sort: [POPULARITY_DESC, TRENDING_DESC]
             ) {
               id
+              genres
+              format
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               title {
@@ -184,7 +197,12 @@ export default {
             media(id_in: $continueWatchIds) {
               id
               status
+              format
+              genres
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               nextAiringEpisode {
@@ -202,7 +220,13 @@ export default {
                 nodes {
                   mediaRecommendation {
                     id
+                    genres
+                    format
+                    seasonYear
+                    averageScore
+                    description
                     coverImage {
+                      color
                       large
                     }
                     title {
@@ -223,7 +247,12 @@ export default {
               status_not: NOT_YET_RELEASED
             ) {
               id
+              genres
+              format
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               title {
@@ -241,7 +270,12 @@ export default {
               status_not: NOT_YET_RELEASED
             ) {
               id
+              genres
+              format
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               title {
@@ -258,7 +292,12 @@ export default {
               isAdult: false
             ) {
               id
+              genres
+              format
+              seasonYear
+              averageScore
               coverImage {
+                color
                 large
               }
               title {
@@ -305,7 +344,8 @@ export default {
               !episodesObj[anime.id].completed ||
               (anime.nextAiringEpisode &&
                 anime.nextAiringEpisode.episode - episodesObj[anime.id].num >= 2)
-          );
+          )
+          .map(anime => ({...anime, row: true}));
         let trending_animes = data.trending_animes.media.map(transformFields);
         let upcoming_animes = data.upcoming_animes.media.map(transformFields);
         let recommended = data.recommended_animes.media
@@ -368,10 +408,7 @@ export default {
     },
     getRecentAnimeReleases() {
       getRecentEpisodes().then((data) => {
-        this.recently_released_animes = data.results.map((ep) => ({
-          ...ep,
-          title: { english: `${ep.title} Episode ${ep.episode}` },
-        }));
+        this.recently_released_animes = data.results
       });
     },
   },

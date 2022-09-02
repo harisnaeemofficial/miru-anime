@@ -35,8 +35,14 @@ export default {
             watchList: Page {
               media(id_in: $idList){
                 id
+                genres
+                format
+                seasonYear
+                averageScore
+                description
                 coverImage {
                   large
+                  color
                 }
                 title {
                   english

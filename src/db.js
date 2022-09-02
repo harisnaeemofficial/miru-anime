@@ -1,6 +1,5 @@
 import path from 'path';
 import Datastore from 'nedb';
-import { assert } from 'console';
 const app = require('electron').app;
 const dbs = {};
 const db_dir_name = path.join(app.getPath('userData'), 'db');

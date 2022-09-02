@@ -10,6 +10,15 @@ export function decodeWatchId(watchId){
 export const transformFields = (anime) => {
     return {
       ...anime,
-      image: anime.coverImage.large
+      image: anime.coverImage.large,
+      color: anime.coverImage.color,
+      releaseDate: anime.seasonYear,
+      rating: anime.averageScore
     }
+}
+export const getLuminanceValue = (RGBColor) => {
+    const R = parseInt(RGBColor.substr(1, 2), 16);
+    const G = parseInt(RGBColor.substr(3, 2), 16);
+    const B = parseInt(RGBColor.substr(5, 2), 16);
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 }

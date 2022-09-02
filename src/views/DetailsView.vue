@@ -109,7 +109,7 @@
             <div class="mt-4" v-if="$apollo.loading || isLoading">
               <ShimmerBox height="70vh" />
             </div>
-            <div v-else>
+            <div :style="{'--theme-color': anime.color}" v-else>
               <TabNavigation
                 v-if="availableTabs.length > 0"
                 :tabs="availableTabs"
@@ -166,7 +166,7 @@
                       <router-link :to="`/details/${relation.id}`">
                         <img class="w-full h-60" :src="relation.image" />
                         <div class="w-full text-center">
-                          {{ relation.title.userPreferred }}
+                          {{ relation.title.english || relation.title.romaji}}
                         </div>
                         <div
                           class="
@@ -178,7 +178,7 @@
                             w-full
                           "
                         >
-                          {{ relation.relationType }}
+                          {{ relation.relationType.replace("_", " ") }}
                         </div>
                       </router-link>
                     </div>
@@ -266,7 +266,7 @@ export default {
                   }
                   title {
                     english
-                    userPreferred
+                    romaji
                   }
                 }
               }
@@ -314,6 +314,7 @@ export default {
             async () => (this.anime = await getAnimeFromAnilistOnly(animeId))
           )
           .then(() => {
+            this.anime.episodes = this.anime.episodes.filter(ep => ep.id);
             this.isLoading = false;
             this.updatePlayBtnState();
             this.getAvailableTabs();
@@ -357,7 +358,8 @@ export default {
     updatePlayBtnState() {
       let btnText = "Start Watching";
       let currentEp = this.watchedEpisodes[0];
-      let epId = null, epNo = 1;
+      let firstEp = this.anime?.episodes[0];
+      let epId = null, epNo = firstEp.number;
       if (this.anime?.episodes != undefined) {
         if (currentEp){
         epNo =
@@ -366,15 +368,17 @@ export default {
             ? currentEp.episodeNumber + 1
             : currentEp.episodeNumber;
         }
-        epNo %= this.anime.episodes.length + 1;
-        epNo = Math.max(epNo, 1);
-        epId = this.anime.episodes.filter(ep => ep.number == epNo).at(0)?.id;
-        if (this.watchedEpisodes.length > 1 && epNo == 1) {
+        epId = this.anime.episodes.find(ep => ep.number == epNo)?.id;
+        if (this.watchedEpisodes.length > 1 && epId == undefined) {
           btnText = "Watch Again";
+          console.log(firstEp);
+          epNo = firstEp.number;
+          epId = firstEp.id;
         } else if (this.watchedEpisodes.length > 0) {
           btnText = "Continue Watching";
         }
       }
+      console.log(epId, epNo);
       this.playBtnState = {
         id: epId && createWatchId(epId, epNo, this.anime.id),
         text: btnText,

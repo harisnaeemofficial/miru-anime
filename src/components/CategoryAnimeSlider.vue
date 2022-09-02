@@ -1,9 +1,9 @@
 <template>
   <div class="card py-1 relative" v-if="animes?.length > 0">
-    <div class="px-5">
-      <h2 class="py-3 text-xl">{{ categoryTitle }}</h2>
+    <div class="px-4">
+      <h2 class="py-3 text-lg uppercase">{{ categoryTitle }}</h2>
       <div ref="container" class="slider-container overflow-hidden">
-        <section class="card_tiles flex gap-x-5 transition-transform duration-500" :style="{transform: `translateX(${translateX}px)`}">
+        <section class="card_tiles flex gap-x-8 transition-transform duration-500" :style="{transform: `translateX(${translateX}px)`}">
           <router-link v-for="anime in animes" :key="anime.id" :to="'/details/' + anime.id">
             <AnimeTile :anime="anime" />
           </router-link>
@@ -28,7 +28,7 @@
 <script>
 import AnimeTile from "@/components/AnimeTile.vue";
 import { BIconChevronRight, BIconChevronLeft } from "bootstrap-icons-vue";
-const itemSize = 199;
+const itemSize = 185;
 export default {
   name: "CategoryAnimeSlider",
   data(){
@@ -49,19 +49,20 @@ export default {
     BIconChevronLeft
   },
   methods: {
-    setState(){
+    onWindowResize(){
       let width = this.$refs.container?.getBoundingClientRect().width || window.innerWidth;
-      const itemsPerPage = Math.floor(width / itemSize);
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const itemsPerPage = Math.ceil(width / itemSize);
       this.itemsPerPage = itemsPerPage;
-      this.contentsize = itemsPerPage * itemSize;
+      this.contentsize = window.innerWidth - 3.19*rem;
     }
   },
   mounted(){
-    this.setState();
-    window.addEventListener('resize', this.setState);
+    this.onWindowResize();
+    window.addEventListener('resize', this.onWindowResize);
   },
   unmounted(){
-    window.removeEventListener('resize', this.setState);
+    window.removeEventListener('resize', this.onWindowResize);
   }
 };
 </script>

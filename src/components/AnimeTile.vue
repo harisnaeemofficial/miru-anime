@@ -1,16 +1,216 @@
 <template>
-<div class="anime_tile w-[182px] text-center">
-  <div>
-    <img class="anime_tile__img h-60 object-cover w-full rounded" :src="anime.image"/>
+  <div class="anime_tile relative w-[185px]">
+    <div>
+      <img
+        class="anime_tile__img h-[265px] object-cover w-full rounded"
+        :src="anime.image"
+      />
+    </div>
+    <div class="mt-2 flex items-start h-12">
+      <p class="anime_tile__title grow line-clamp-2">
+        {{ anime.title.english || anime.title.userPreferred }}
+      </p>
+      <div class="relative">
+        <button
+          ref="contextMenuToggle"
+          class="p-2 context-menu-btn"
+          @click="toggleContextMenu"
+        >
+          <BIconThreeDotsVertical />
+        </button>
+        <div
+          ref="contextMenu"
+          class="
+            context-menu
+            drop-shadow-xl
+            bg-white
+            absolute
+            right-0
+            rounded
+            w-[220px]
+            bottom-full
+            z-40
+          "
+          :class="{ invisible: contextMenuClosed }"
+        >
+          <div class="px-2 py-2 h-full">
+            <ul>
+              <li
+                class="
+                  flex
+                  rounded
+                  gap-x-3
+                  px-4
+                  py-2
+                  hover:bg-slate-200
+                  items-center
+                "
+              >
+                <BIconPlusCircleFill class="text-xl" />
+                <span>Add to Watch List</span>
+              </li>
+              <li
+                v-if="anime.row"
+                class="
+                  flex
+                  rounded
+                  gap-x-3
+                  px-4
+                  py-2
+                  hover:bg-slate-200
+                  items-center
+                "
+              >
+                <BIconXCircleFill class="text-xl" /> Remove from Row
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="
+        blur-overlay
+        rounded
+        absolute
+        top-0
+        w-full
+        h-[265px]
+        bg-transparent-dark
+        left-0
+      "
+    >
+      <div class="relative text-white py-2 px-3 w-full h-full">
+        <div class="mb-2">
+          <span v-if="anime.format">{{ anime.format }}</span>
+          <span v-if="anime.releaseDate">
+            <span class="dot" />
+            {{ anime.releaseDate }}
+          </span>
+        </div>
+        <div v-if="anime.rating" class="flex text-xl space-x-2 items-end">
+          <h2>{{ anime.rating }}%</h2>
+          <BIconHandThumbsUpFill
+            :style="{
+              color:
+                anime.rating > 80
+                  ? '#50C878'
+                  : anime.rating > 70
+                  ? '#FFC300'
+                  : anime.rating > 50
+                  ? '#FF5733'
+                  : 'red',
+            }"
+          />
+        </div>
+        <div
+          class="
+            text-5xl
+            absolute
+            top-0
+            left-0
+            w-full
+            h-full
+            flex
+            justify-center
+            items-center
+          "
+        >
+          <BIconArrowRightCircleFill />
+        </div>
+        <div
+          v-if="anime.genres"
+          class="
+            rounded-b
+            bg-black
+            w-full
+            left-0
+            px-4
+            text-center
+            py-2
+            overflow-hidden
+            absolute
+            bottom-0
+          "
+        >
+          <TagBadge
+            v-for="genre in anime.genres?.slice(0, 1)"
+            :key="genre"
+            :color="anime.color"
+            >{{ genre }}</TagBadge
+          >
+        </div>
+      </div>
+    </div>
   </div>
-  <p class="mt-2 h-12 line-clamp-2">{{anime.title.english || anime.title.userPreferred}}</p>
-</div>
 </template>
 
 <script>
+import TagBadge from "./TagBadge.vue";
+import {
+  BIconHandThumbsUpFill,
+  BIconPlusCircleFill,
+  BIconXCircleFill,
+  BIconArrowRightCircleFill,
+  BIconThreeDotsVertical,
+} from "bootstrap-icons-vue";
 export default {
-    props: {
-        anime: Object
-    }
-}
+  data() {
+    return {
+      contextMenuClosed: true,
+    };
+  },
+  methods: {
+    toggleContextMenu(e) {
+      e.preventDefault();
+      this.contextMenuClosed = !this.contextMenuClosed;
+      this.applyBoxStyle();
+    },
+    onDocumentMouseDown(e) {
+      if (
+        e.target == this.$refs.contextMenuToggle ||
+        this.$refs.contextMenuToggle.contains(e.target)
+      )
+        return;
+      this.contextMenuClosed = !this.$refs.contextMenu.contains(e.target);
+    },
+    applyBoxStyle() {
+      let boundingRect = this.$refs.contextMenu.getBoundingClientRect();
+      if (boundingRect.left + boundingRect.x < 0) {
+        this.$refs.contextMenu.style.transform = `translateX(90%)`;
+      } else {
+        this.$refs.contextMenu.style.transform = "";
+      }
+    },
+  },
+  mounted() {
+    document.addEventListener("mousedown", this.onDocumentMouseDown);
+  },
+  unmounted() {
+    document.removeEventListener("mousedown", this.onDocumentMouseDown);
+  },
+  props: {
+    anime: Object,
+  },
+  components: {
+    TagBadge,
+    BIconHandThumbsUpFill,
+    BIconPlusCircleFill,
+    BIconXCircleFill,
+    BIconArrowRightCircleFill,
+    BIconThreeDotsVertical,
+  },
+};
 </script>
+<style scoped>
+.anime_tile:hover .blur-overlay {
+  display: block;
+}
+.blur-overlay {
+  display: none;
+}
+.anime_tile__img {
+  box-shadow: 0 14px 30px rgba(103, 132, 187, 0.15),
+    0 4px 4px rgba(103, 132, 187, 0.05);
+}
+</style>

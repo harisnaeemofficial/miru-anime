@@ -26,7 +26,7 @@ export async function getAnimeInfo(animeId){
 export async function getEpisodeSources(episodeId){
     return await anilist.provider.fetchEpisodeSources(episodeId);
 }
-export const getRecentEpisodes = anilist.provider.fetchRecentEpisodes;
+export const getRecentEpisodes = anilist.fetchRecentEpisodes;
 export async function getWeekAiringSchedule(start, end){
   let hasNextPage = true, page = 1, airingSchedules = [];
   do {

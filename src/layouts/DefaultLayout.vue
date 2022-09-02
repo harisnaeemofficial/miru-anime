@@ -51,7 +51,7 @@ export default {
         searchTitle(e){
             e.preventDefault();
         },
-        handleScroll(){
+        onDocumentScroll(){
             if (this.searchQuery !== '') return;
             if (window.scrollY > 50){
                 this.$refs.navbar?.classList.add("solid")
@@ -66,11 +66,11 @@ export default {
     },
     created(){
         if (this.addScrollEvents)
-        document.addEventListener("scroll", this.handleScroll);
+        document.addEventListener("scroll", this.onDocumentScroll);
     },
     onBeforeUnmount(){
         if (this.addScrollEvents)
-        document.removeEventListener("scroll", this.hanfleScroll);
+        document.removeEventListener("scroll", this.onDocumentScroll);
     }
 }
 </script>

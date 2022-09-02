@@ -32,8 +32,13 @@ export default {
                     results: Page {
                         media(search: $title, type: ANIME, isAdult: false, format_not_in: $banned_formats){
                             id
+                            genres
+                            format
+                            seasonYear
+                            averageScore
                             coverImage {
                                 large
+                                color
                             }
                             title {
                                 english
