@@ -3,7 +3,7 @@
     <div class="px-4">
       <div class="flex items-center">
         <h2 class="py-3 grow text-2xl capitalize">{{ categoryTitle }}</h2>
-        <router-link class="text-sm flex items-center gap-x-2" v-if="viewAll" :to="viewAll">
+        <router-link class="text-sm flex items-center gap-x-1" v-if="viewAll" :to="viewAll">
           VIEW ALL
           <BIconChevronRight/>
         </router-link>
@@ -19,13 +19,13 @@
     <button
       @click="translateX += contentsize"
       v-if="translateX != 0"
-      class="slider-btn left-0">
+      class="slider-btn ml-[-0.75rem] left-0">
       <BIconChevronLeft />
     </button>
     <button
       @click="translateX -= contentsize"
       v-if="translateX <= 0 && - translateX/itemSize + itemsPerPage < animes.length"
-      class="slider-btn right-0">
+      class="slider-btn mr-[-0.75rem] right-0">
       <BIconChevronRight/>
     </button>
   </div>

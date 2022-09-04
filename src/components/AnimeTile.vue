@@ -43,7 +43,7 @@
                   hover:bg-slate-200
                 "
               >
-                <WatchListButton :id="+anime.id" type="menu-item" />
+                <WatchListButton :id="+anime.id" :title="anime.title.english || anime.title.userPreferred" type="menu-item" />
               </li>
               <li
                 v-if="anime.row"

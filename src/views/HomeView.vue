@@ -44,7 +44,7 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="homeFeed.banner_anime.id" />
+              <WatchListButton :id="homeFeed.banner_anime.id" :title="homeFeed.banner_anime.title.english || homeFeed.banner_anime.title.userPreferred" />
             </div>
           </div>
         </TrailerBanner>
@@ -127,6 +127,9 @@ export default {
             id
             genres
             bannerImage
+            coverImage {
+              extraLarge
+            }
             format
             seasonYear
             description

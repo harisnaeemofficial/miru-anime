@@ -12,21 +12,18 @@
 </DefaultLayout>
 </template>
 <script>
-import { sendEventAsync } from '@/libs/ipc-lib'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import GridLayout from '@/layouts/GridLayout.vue';
 import { gql } from '@apollo/client/core';
 import { transformFields } from '@/libs/utils-lib';
 import AnimeTile from '@/components/AnimeTile.vue';
+import watchListStore from "@/stores/watchListStore";
 export default {
     data() {
       return {
-        watchListIds: [],
-        watchList: []
+        watchList: [],
+        listenerId: -1
       }
-    },
-    created() {
-        sendEventAsync("db:getWatchList", null).then(w => this.watchListIds  = w.map( anime => anime.animeId));
     },
     apollo: {
       watchList: {
@@ -54,13 +51,19 @@ export default {
         `,
         variables(){
           return {
-            idList: this.watchListIds
+            idList: watchListStore.watchListIds
           }
         },
         update(data){
           return data.watchList.media.map(transformFields)
         }
       }
+    },
+    mounted(){
+      this.listenerId = watchListStore.addListener(() => this.$apollo.queries.watchList.refresh())
+    },
+    unmounted(){
+      watchListStore.removeListener(this.listenerId);
     },
     components: { DefaultLayout, GridLayout, AnimeTile }
 }

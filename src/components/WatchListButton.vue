@@ -25,9 +25,13 @@
       {{ !isInWatchList ? "Add to" : "Remove from" }} Watchlist
     </span>
   </button>
-  <div class="flex gap-x-3 items-center" v-else-if="type == 'menu-item'" @click="toggleInWatchList">
+  <div
+    class="flex gap-x-3 items-center"
+    v-else-if="type == 'menu-item'"
+    @click="toggleInWatchList"
+  >
     <BIconPlusCircleFill v-if="!isInWatchList" class="text-xl" />
-    <BIconCheckCircleFill v-else class="text-xl"/>
+    <BIconCheckCircleFill v-else class="text-xl" />
     <span class="mr-2">
       {{ !isInWatchList ? "Add to" : "Remove from" }} Watchlist
     </span>
@@ -35,47 +39,55 @@
 </template>
 
 <script>
-import { sendEventAsync } from '@/libs/ipc-lib';
-import {BIconPlus,
-   BIconDash, BIconPlusCircleFill, BIconCheckCircleFill} from 'bootstrap-icons-vue';
+import {
+  BIconPlus,
+  BIconDash,
+  BIconPlusCircleFill,
+  BIconCheckCircleFill,
+} from "bootstrap-icons-vue";
+import watchListStore from "@/stores/watchListStore";
+import notificationStore from "@/stores/notificationStore";
 export default {
-  name: 'WatchListButton',
-  data(){
-    return {isInWatchList: false}
-  }, 
+  name: "WatchListButton",
+  data() {
+    return { isInWatchList: false, listenerId: -1 };
+  },
   props: {
     id: Number,
+    title: String,
     type: {
       type: String,
-      default: 'button'
-    }
+      default: "button",
+    },
   },
   methods: {
-    toggleInWatchList(e){
+    toggleInWatchList(e) {
       e.preventDefault();
-      if (this.isInWatchList){
-        sendEventAsync("db:removeFromWatchList", this.id)
-        .then(() => this.isInWatchList = false);
+      if (this.isInWatchList) {
+        watchListStore.removeIdFromWatchList(this.id);
+        notificationStore.setNotification(`${this.title} was removed from Your List`)
       } else {
-        sendEventAsync("db:addToWatchList", this.id)
-        .then(() => this.isInWatchList = true);
+        watchListStore.addWatchIdToWatchList(this.id);
+        notificationStore.setNotification(`${this.title} was added to Your List`)
       }
     },
-    updateIsInWatchListStatus(){
-      sendEventAsync("db:isInWatchList", this.id)
-      .then(isIn => this.isInWatchList = isIn);
+    updateIsInList(watchListIds){
+      this.isInWatchList = watchListIds.includes(this.id)
     }
+  },
+  mounted(){
+    this.updateIsInList(watchListStore.watchListIds);
+    this.listenerId = watchListStore.addListener(this.updateIsInList)
+  },
+  unmounted(){
+    watchListStore.removeListener(this.listenerId)
   },
   components: {
     BIconPlus,
     BIconDash,
     BIconPlusCircleFill,
-    BIconCheckCircleFill
-    
+    BIconCheckCircleFill,
   },
-  created(){
-    this.$watch('id', this.updateIsInWatchListStatus, {immediate: true})
-  }
 };
 </script>
 

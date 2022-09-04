@@ -6,7 +6,6 @@ import {
     addWatchedAnime,
     removeWatchedAnime,
     getWatchList,
-    isInWatchList,
     addWatchedEpisode,
     updateEpisodeWatchTime,
     updateWatchedAnimeWatchedAll,
@@ -21,9 +20,6 @@ export default function registerChannelEvents() {
     })
     ipcMain.handle("db:removeFromWatchList", async (_, ...args) => {
         return await removeFromWatchList(...args);
-    })
-    ipcMain.handle("db:isInWatchList", async (_, ...args) => {
-        return await isInWatchList(...args);
     })
     ipcMain.handle("db:getWatchList", async () => {
         return await getWatchList();

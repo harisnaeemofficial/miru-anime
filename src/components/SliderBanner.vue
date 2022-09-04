@@ -43,20 +43,20 @@
       :style="`background-image: url(${images[active]})`"
     />
     <div class="slider-btns-container px-7 text-white absolute left-0 top-0 w-full h-full flex items-center justify-between">
-        <BIconChevronLeft class="text-5xl z-10 cursor-pointer" @click="active = active - 1 >= 0 ? active - 1 : images.length-1"/>
-        <BIconChevronRight class="text-5xl z-10 cursor-pointer" @click="active = (active + 1) % images.length"/>
+        <BIconChevronLeft class="text-5xl z-10 cursor-pointer" @click="prevFrame"/>
+        <BIconChevronRight class="text-5xl z-10 cursor-pointer" @click="nextFrame"/>
     </div>
-    <div class="slider-indicators z-10 absolute bottom-0 w-full py-5 right-10">
-      <div class="flex text-xl items-center justify-center gap-x-2">
+    <div class="slider-indicators z-10 absolute bottom-0 w-full py-5 left-0">
+      <div class="flex text-xl items-center justify-center gap-x-2" :style="{'--slide-duration': slideDuration+'s'}">
         <span
-          v-for="i in images.length"
-          @click="active = i - 1"
+          v-for="(_, i) in images.length"
+          @click="setActiveFrame(i)"
           :key="i"
           :class="{
-            'bg-white': i - 1 == active,
-            'bg-gray-400': i - 1 != active,
+            'active': i == active,
+            'bg-gray-400': i != active,
           }"
-          class="hover:bg-white cursor-pointer h-[2px] w-[20px] rounded-full"
+          class="slider-indicator relative hover:bg-gray-300 cursor-pointer h-[3px] w-[25px] rounded"
         ></span>
       </div>
     </div>
@@ -73,18 +73,71 @@ export default {
         validator: prop => prop.every(e => typeof e === "string"),
         required: true
     },
+    slideDuration: {
+      type: Number,
+      default: 10
+    }
   },
   components: {
     BIconChevronLeft,
     BIconChevronRight,
   },
+  methods: {
+    nextFrame(){
+      this.active = (this.active + 1) % this.images.length;
+      this.setFrameTimeOut();
+      
+    },
+    prevFrame(){
+      this.active = this.active - 1 >= 0 ? this.active - 1 : this.images.length-1;
+      this.setFrameTimeOut();
+    },
+    setActiveFrame(i){
+      this.active = i;
+      this.setFrameTimeOut();
+    },
+    setFrameTimeOut(){
+      if (this.timeoutHandle)
+        this.timeoutHandle = clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = setTimeout(this.nextFrame, this.slideDuration*1000);
+    }
+  },
   data() {
     return {
       active: 0,
+      timeoutHandle: null
     };
   },
+  mounted(){
+    this.setFrameTimeOut();
+  },
+  unmounted(){
+    this.timeoutHandle = clearTimeout(this.timeoutHandle);
+  }
 };
 </script>
   
-  <style>
+<style>
+  .slider-indicator.active {
+    @apply bg-gray-300;
+  }
+  .slider-indicator.active::before {
+    @apply rounded;
+    content: '';
+    position: absolute;
+    width: 0px;
+    height:100%;
+    left: 0;
+    top: 0;
+    background-color: white;
+    animation: grow var(--slide-duration) linear infinite ;
+  }
+  @keyframes grow {
+    from {
+      width: 0px;
+    }
+    to {
+      width: 100%;
+    }
+  }
 </style>

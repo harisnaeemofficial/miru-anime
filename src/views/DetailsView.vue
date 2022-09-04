@@ -44,7 +44,7 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="+anime.id" />
+              <WatchListButton :id="+anime.id" :title="anime.title.english || anime.title.romaji" />
             </div>
           </div>
         </div>

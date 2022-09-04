@@ -6,11 +6,11 @@
         </div>
         <div class="flex max-h-full my-2">
             <div class="img-cover rounded bg-black min-w-[160px] relative">
-                <img class="max-h-[90px] mx-auto" :src="episode?.image" />
+                <img class="max-h-[90px] rounded mx-auto" :src="episode?.image" />
                 <div class="absolute z-10 bottom-0 w-full" v-if="episode.watchedPercentage">
                     <StatusBar :percentage="episode.watchedPercentage" />
                 </div>
-                <div class="hover-overlay-effect -z-10 text-3xl top-0 bg-transparent-dark absolute w-full h-full flex items-center justify-center">
+                <div class="hover-overlay-effect rounded -z-10 text-3xl top-0 bg-transparent-dark absolute w-full h-full flex items-center justify-center">
                     <div class="w-[35px] h-[35px] bg-white rounded-full pl-0.5 pt-px flex items-center justify-center">
                         <BIconPlayFill />
                     </div>

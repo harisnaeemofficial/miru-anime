@@ -4,8 +4,6 @@ const app = require('electron').app;
 const dbs = {};
 const db_dir_name = path.join(app.getPath('userData'), 'db');
 
-const episodeUpdateCache = {};
-
 dbs.listDB = new Datastore({
     filename: path.join(db_dir_name, 'list.db'),
     autoload: true
@@ -18,8 +16,6 @@ dbs.episodesDB = new Datastore({
     filename: path.join(db_dir_name, 'watched-eps.db'),
     autoload: true
 })
-
-const cacheClearInterval = 500;
 
 dbs.listDB.ensureIndex({ fieldName: 'animeId', unique: true });
 dbs.animesDB.ensureIndex({ fieldName: 'animeId', unique: true });
@@ -46,13 +42,6 @@ export function getWatchList() {
         (cb) => dbs.listDB.find({}).sort({ addedOn: 1 }).exec(cb)
     );
 }
-export function isInWatchList(animeId) {
-    return NEDBPromise(
-        (cb) => dbs.listDB.findOne({ animeId }).exec(
-            (error, doc) => cb(error, doc != null)
-        )
-    );
-}
 
 const getAnimeIdEpisodeNumberKey = (animeId, episodeNumber) => `${animeId}${episodeNumber}`
 export function addWatchedAnime(animeId) {
@@ -67,7 +56,7 @@ export function updateWatchedAnimeWatchedAll(animeId, watchedAll) {
 }
 export function getContinueWatchAnimes() {
     return NEDBPromise(async (cb) => {
-        dbs.animesDB.find({ watchedAll: false }, { animeId: 1, _id: 0},(err, animes) => {
+        dbs.animesDB.find({ watchedAll: false }, { animeId: 1, _id: 0 }, (err, animes) => {
             if (err) return cb(err, null);
             dbs.episodesDB.find({ $or: animes }, (err, episodes) => {
                 if (err) return cb(err, null);
@@ -85,7 +74,9 @@ export function getContinueWatchAnimes() {
 }
 export function removeWatchedAnime(animeId) {
     return NEDBPromise(
-        (cb) => dbs.animesDB.remove({ animeId }, cb)
+        (cb) => dbs.animesDB.remove({ animeId }, () => {
+            dbs.episodesDB.remove({ animeId }, cb)
+        })
     );
 }
 export function addWatchedEpisode(animeId, episodeNumber, episodeDuration) {
@@ -114,16 +105,14 @@ export async function getWatchedAnimes() {
     )
 }
 export async function updateEpisodeWatchTime(animeId, episodeNumber, watchTime) {
-    episodeUpdateCache[getAnimeIdEpisodeNumberKey(animeId, episodeNumber)] = watchTime;
-    return { error: null, watchTime }
-}
-function watchTimeUpdateQuery(animeIdEpisodeNumber, watchTime, cb) {
-    dbs.episodesDB.update(
-        { animeIdEpisodeNumber: animeIdEpisodeNumber },
+    const animeIdEpisodeNumber = getAnimeIdEpisodeNumberKey(animeId, episodeNumber);
+    return NEDBPromise((cb) => dbs.episodesDB.update(
+        { animeIdEpisodeNumber },
         { $set: { watchTime } },
         {},
         cb
-    )
+    ))
+
 }
 export function getEpisodeWatchTime(animeId, episodeNumber) {
     return NEDBPromise(
@@ -131,16 +120,4 @@ export function getEpisodeWatchTime(animeId, episodeNumber) {
             .projection({ watchTime: 1 })
             .exec(cb)
     );
-}
-
-
-setInterval(clearEpisodeUpdateCache, cacheClearInterval);
-export function clearEpisodeUpdateCache() {
-    for (let key in episodeUpdateCache) {
-        if (episodeUpdateCache[key] != null) {
-            watchTimeUpdateQuery(key, episodeUpdateCache[key], (error, _) => {
-                episodeUpdateCache[key] = null;
-            })
-        }
-    }
 }
