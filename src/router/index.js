@@ -8,19 +8,14 @@ const routes = [
         component: HomeView
     },
     {
-        path: '/tv',
-        name: 'tv',
-        component:  () => import('../views/TVView.vue')
-    },
-    {
-        path: '/movies',
-        name: 'movies',
-        component:  () => import('../views/MoviesView.vue')
+        path: '/browse/:browse_type',
+        name: 'browse',
+        component:  () => import('../views/BrowseView.vue')
     },
     {
         path: '/my-list',
-        name: 'my list',
-        component: () => import('../views/MyListView.vue')
+        name: 'my-list',
+        component:  () => import('../views/MyListView.vue')
     },
     {
         path: '/release-calendar',

@@ -25,9 +25,9 @@
             drop-shadow-xl
             bg-white
             absolute
-            right-0
+            left-0
             rounded
-            w-[220px]
+            w-[238px]
             bottom-full
             z-40
           "
@@ -37,17 +37,13 @@
             <ul>
               <li
                 class="
-                  flex
                   rounded
-                  gap-x-3
                   px-4
                   py-2
                   hover:bg-slate-200
-                  items-center
                 "
               >
-                <BIconPlusCircleFill class="text-xl" />
-                <span>Add to Watch List</span>
+                <WatchListButton :id="+anime.id" type="menu-item" />
               </li>
               <li
                 v-if="anime.row"
@@ -88,7 +84,7 @@
             {{ anime.releaseDate }}
           </span>
         </div>
-        <div v-if="anime.rating" class="flex text-xl space-x-2 items-end">
+        <div v-if="anime.rating" class="flex text-xl space-x-2 items-center">
           <h2>{{ anime.rating }}%</h2>
           <BIconHandThumbsUpFill
             :style="{
@@ -149,11 +145,11 @@
 import TagBadge from "./TagBadge.vue";
 import {
   BIconHandThumbsUpFill,
-  BIconPlusCircleFill,
   BIconXCircleFill,
   BIconArrowRightCircleFill,
   BIconThreeDotsVertical,
 } from "bootstrap-icons-vue";
+import WatchListButton from "./WatchListButton.vue";
 export default {
   data() {
     return {
@@ -176,8 +172,8 @@ export default {
     },
     applyBoxStyle() {
       let boundingRect = this.$refs.contextMenu.getBoundingClientRect();
-      if (boundingRect.left + boundingRect.x < 0) {
-        this.$refs.contextMenu.style.transform = `translateX(90%)`;
+      if (boundingRect.x + boundingRect.width > window.innerWidth) {
+        this.$refs.contextMenu.style.transform = `translateX(-90%)`;
       } else {
         this.$refs.contextMenu.style.transform = "";
       }
@@ -195,11 +191,11 @@ export default {
   components: {
     TagBadge,
     BIconHandThumbsUpFill,
-    BIconPlusCircleFill,
     BIconXCircleFill,
     BIconArrowRightCircleFill,
     BIconThreeDotsVertical,
-  },
+    WatchListButton
+},
 };
 </script>
 <style scoped>

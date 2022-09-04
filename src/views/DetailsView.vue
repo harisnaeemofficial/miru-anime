@@ -2,7 +2,7 @@
   <BackLayout>
     <div class="details">
       <ShimmerBox v-if="$apollo.loading || isLoading" height="28rem" />
-      <AnimeBanner v-else :bannerImage="anime.cover">
+      <ImageBanner v-else :image="anime.cover">
         <div class="px-5">
           <h1 class="text-5xl font-bold line-clamp-1">
             {{ anime.title?.english || anime.title?.romaji }}
@@ -48,7 +48,7 @@
             </div>
           </div>
         </div>
-      </AnimeBanner>
+      </ImageBanner>
       <div class="px-12">
         <div class="lg:grid lg:grid-cols-[250px_auto] gap-x-10">
           <div class="max-w-xl mt-[-250px]">
@@ -210,15 +210,19 @@
 <script>
 import config from "../config.json";
 import gql from "graphql-tag";
-import { BIconPlayFill } from "bootstrap-icons-vue";
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
-import AnimeBanner from "@/components/AnimeBanner.vue";
+import ImageBanner from "@/components/ImageBanner.vue";
 import TagBadge from "@/components/TagBadge.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import BackLayout from "@/layouts/BackLayout.vue";
 import TruncatedTextWithMore from "@/components/TruncatedTextWithMore.vue";
 import TrailerVideo from "@/components/TrailerVideo.vue";
 import TabNavigation from "@/components/TabNavigation.vue";
+import WatchListButton from "@/components/WatchListButton.vue";
+import EpisodesList from "@/components/EpisodesList.vue";
+import EpisodeItem from "@/components/EpisodeItem.vue";
+import ShimmerBox from "@/components/ShimmerBox.vue";
+import { BIconPlayFill } from "bootstrap-icons-vue";
 import {
   getAnimeInfo,
   getAnimeFromAnilistOnly,
@@ -228,10 +232,6 @@ import {
 } from "@/libs/anime-lib";
 import { createWatchId, transformFields } from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
-import WatchListButton from "@/components/WatchListButton.vue";
-import EpisodesList from "@/components/EpisodesList.vue";
-import EpisodeItem from "@/components/EpisodeItem.vue";
-import ShimmerBox from "@/components/ShimmerBox.vue";
 
 export default {
   name: "DetailsView",
@@ -314,7 +314,7 @@ export default {
             async () => (this.anime = await getAnimeFromAnilistOnly(animeId))
           )
           .then(() => {
-            this.anime.episodes = this.anime.episodes.filter(ep => ep.id);
+            this.anime.episodes = this.anime.episodes?.filter(ep => ep.id) || [];
             this.isLoading = false;
             this.updatePlayBtnState();
             this.getAvailableTabs();
@@ -359,7 +359,7 @@ export default {
       let btnText = "Start Watching";
       let currentEp = this.watchedEpisodes[0];
       let firstEp = this.anime?.episodes[0];
-      let epId = null, epNo = firstEp.number;
+      let epId = null, epNo = firstEp?.number || 1;
       if (this.anime?.episodes != undefined) {
         if (currentEp){
         epNo =
@@ -371,14 +371,12 @@ export default {
         epId = this.anime.episodes.find(ep => ep.number == epNo)?.id;
         if (this.watchedEpisodes.length > 1 && epId == undefined) {
           btnText = "Watch Again";
-          console.log(firstEp);
           epNo = firstEp.number;
           epId = firstEp.id;
         } else if (this.watchedEpisodes.length > 0) {
           btnText = "Continue Watching";
         }
       }
-      console.log(epId, epNo);
       this.playBtnState = {
         id: epId && createWatchId(epId, epNo, this.anime.id),
         text: btnText,
@@ -387,7 +385,7 @@ export default {
   },
   components: {
     CategoryAnimeSlider,
-    AnimeBanner,
+    ImageBanner,
     BIconPlayFill,
     TagBadge,
     PrimaryButton,

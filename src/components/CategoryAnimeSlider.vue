@@ -1,7 +1,13 @@
 <template>
   <div class="card py-1 relative" v-if="animes?.length > 0">
     <div class="px-4">
-      <h2 class="py-3 text-lg uppercase">{{ categoryTitle }}</h2>
+      <div class="flex items-center">
+        <h2 class="py-3 grow text-2xl capitalize">{{ categoryTitle }}</h2>
+        <router-link class="text-sm flex items-center gap-x-2" v-if="viewAll" :to="viewAll">
+          VIEW ALL
+          <BIconChevronRight/>
+        </router-link>
+      </div>
       <div ref="container" class="slider-container overflow-hidden">
         <section class="card_tiles flex gap-x-8 transition-transform duration-500" :style="{transform: `translateX(${translateX}px)`}">
           <router-link v-for="anime in animes" :key="anime.id" :to="'/details/' + anime.id">
@@ -41,6 +47,7 @@ export default {
   },
   props: {
     categoryTitle: String,
+    viewAll: String,
     animes: Array,
   },
   components: {

@@ -22,7 +22,10 @@
 <script>
 export default {
     props: {
-        tabs: Array
+        tabs: {
+            type: Array,
+            validator: prop => prop.every(e => typeof e === "string")
+        }
     },
     data(){
         return {

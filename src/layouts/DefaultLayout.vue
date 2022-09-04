@@ -7,8 +7,8 @@
             </router-link>
             <ul class="nav-links flex space-x-10">
                 <router-link class="nav-link" to="/">Home</router-link>
-                <router-link class="nav-link" to="/tv">TV</router-link>
-                <router-link class="nav-link" to="/movies">Movies</router-link>
+                <router-link class="nav-link" to="/browse/tv">TV</router-link>
+                <router-link class="nav-link" to="/browse/movies">Movies</router-link>
                 <router-link class="nav-link" to="/release-calendar">Release Calendar</router-link>
                 <router-link class="nav-link" to="/my-list">My List</router-link>
             </ul>
@@ -22,7 +22,7 @@
             </div>
         </div>
     </header>
-    <main class="">
+    <main>
         <SearchView :query="searchQuery" v-if="searchQuery !== ''" />
         <slot v-else/>
     </main>
@@ -131,7 +131,10 @@ export default {
 #search-form.expanded #search-input {
     @apply scale-x-100;
 }
-.default-layout-main {
-    @apply  mx-12 mt-20
+.main-container {
+    @apply mx-12 mt-20;
+}
+.main-container-fluid {
+    @apply mt-3 mx-7;
 }
 </style>

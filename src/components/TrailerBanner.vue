@@ -68,8 +68,8 @@ export default {
       containerHeight  = (window.innerHeight * 0.7);
       if (iframe){
         this.heightMax = (window.innerWidth / window.innerHeight) < 1.25;
+        this.yTranslate =  (containerHeight - iframe.clientHeight) / 4 + 'px'
       }
-      this.yTranslate =  (containerHeight - iframe.clientHeight) / 4 + 'px'
     }
   },
   mounted() {

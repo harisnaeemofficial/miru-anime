@@ -1,6 +1,6 @@
 <template>
   <div class="episode-item">
-    <div class="px-5 grid grid-cols-[30px_auto] gap-x-6 max-h-[100px]">
+    <div class="px-5 grid grid-cols-[35px_auto] gap-x-6 max-h-[100px]">
         <div class="text-right pt-2 line-clamp-1">
             {{ episode.number }}
         </div>

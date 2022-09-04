@@ -1,5 +1,5 @@
 <template>
-  <div class="shimmer-box" :style="{ width: width, height: height }"></div>
+  <div class="shimmer-box" :style="{ width, height }"></div>
 </template>
 
 <script>

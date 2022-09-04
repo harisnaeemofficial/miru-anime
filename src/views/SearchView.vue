@@ -1,5 +1,5 @@
 <template>
-<div class="default-layout-main pt-8">
+<div class="main-container pt-8">
   <div v-if="results?.length > 0">
     <GridLayout>
         <router-link v-for="result in results" :key="result.id" :to="'/details/'+result?.id">

@@ -11,7 +11,7 @@
       :autoplay="autoplay"
       ref="video"
     >
-      <slot name="innerVideo"/>
+      <slot name="innerVideo" />
     </video>
     <div class="video-overlay-widgets">
       <slot name="widgetOverlay" />
@@ -111,23 +111,43 @@
           {{ this.videoDuration }}
         </div>
         <slot name="controlsRight" />
-         <div class="relative subtitles-container" v-if="subtitlesData.availableSubtitles.length > 0">
-          <div class="subtitles-menu w-[300px] absolute bg-gray-700 right-4 bottom-7 hidden py-4">
-            <span class="block px-7 py-2 hover:font-bold hover:cursor-pointer" v-for="(subtitle, index) in subtitlesData.availableSubtitles" :key="index" @click="selectLang(subtitle)">
-              {{subtitle}}
+        <div
+          class="relative subtitles-container"
+          v-if="subtitlesData.availableSubtitles.length > 0"
+        >
+          <div
+            class="
+              subtitles-menu
+              w-[300px]
+              absolute
+              bg-gray-700
+              right-4
+              bottom-7
+              hidden
+              py-4
+            "
+          >
+            <span
+              class="block px-7 subtitle-item py-2 hover:font-bold hover:cursor-pointer"
+              v-for="(subtitle, index) in subtitlesData.availableSubtitles"
+              :key="index"
+              :class="{active: subtitlesData.selectedSubtitle == subtitle}"
+              @click="selectLang(subtitle)"
+            >
+              {{ subtitle }}
             </span>
           </div>
           <button
-              @click="toggleSubtitles"
-              class="
-                w-[30px]
-                h-[30px]
-                opacity-75
-                hover:opacity-100
-                transition-opacity
-                text-2xl
-              "
-            >
+            @click="toggleSubtitles"
+            class="
+              w-[30px]
+              h-[30px]
+              opacity-75
+              hover:opacity-100
+              transition-opacity
+              text-2xl
+            "
+          >
             <BIconBadgeCcFill v-if="subtitlesData.selectedSubtitle != 'OFF'" />
             <BIconBadgeCc v-else />
           </button>
@@ -164,7 +184,7 @@ import {
   BIconBadgeCcFill,
 } from "bootstrap-icons-vue";
 import Hls from "hls.js";
-import webvtt from 'node-webvtt';
+import webvtt from "node-webvtt";
 const hls = new Hls();
 export default {
   data() {
@@ -184,8 +204,8 @@ export default {
       thumbnailsData: null,
       subtitlesData: {
         availableSubtitles: [],
-        selectedSubtitle: "OFF"
-      }
+        selectedSubtitle: "OFF",
+      },
     };
   },
   components: {
@@ -221,21 +241,21 @@ export default {
         this.isFullscreen = true;
       }
     },
-    selectLang(lang){
+    selectLang(lang) {
       this.subtitlesData.selectedSubtitle = lang;
-      for (let track of this.$refs.video.textTracks){
-        if (track.label == lang){
-          track.mode = 'showing';
+      for (let track of this.$refs.video.textTracks) {
+        if (track.label == lang) {
+          track.mode = "showing";
         } else {
-          track.mode = 'hidden';
+          track.mode = "hidden";
         }
       }
     },
-    toggleSubtitles(){
-      if (this.subtitlesData.selectedSubtitle != "OFF"){
-        this.selectLang('OFF');
+    toggleSubtitles() {
+      if (this.subtitlesData.selectedSubtitle != "OFF") {
+        this.selectLang("OFF");
       } else {
-        this.selectLang(this.subtitlesData.availableSubtitles[0])
+        this.selectLang(this.subtitlesData.availableSubtitles[0]);
       }
     },
     toggleMuteVideo() {
@@ -254,32 +274,34 @@ export default {
     },
     addThumbnailsData(track, srcUrl) {
       const parsedThumbnails = [];
-      const  images = {}
-      const baseUrl = srcUrl.slice(0, srcUrl.lastIndexOf('/'))
+      const images = {};
+      const baseUrl = srcUrl.slice(0, srcUrl.lastIndexOf("/"));
       const diff = track.cues[0].end - track.cues[0].start; // DIff might be different for different tracks need to verify.
-      for (const cue of track.cues){
+      for (const cue of track.cues) {
         let [imgSrc, dims] = cue.text.split("#");
-        if (images[imgSrc] == null){
+        if (images[imgSrc] == null) {
           let img = new Image();
           img.src = baseUrl + "/" + imgSrc;
           images[imgSrc] = img;
         }
-        let [x, y, w, h] = dims.split("=")[1].split(",")
-        parsedThumbnails.push({x, y, w, h, imgSrc})
+        let [x, y, w, h] = dims.split("=")[1].split(",");
+        parsedThumbnails.push({ x, y, w, h, imgSrc });
       }
       const canvas = this.$refs.canvas;
       let ctx = canvas.getContext("2d");
-      canvas.classList.add("thumbnail-img")
-      this.thumbnailsData = {ctx, diff, parsedThumbnails, images}
+      canvas.classList.add("thumbnail-img");
+      this.thumbnailsData = { ctx, diff, parsedThumbnails, images };
     },
-    addSubtitleData(){
+    addSubtitleData() {
       this.subtitlesData.availableSubtitles = [];
       for (let track of this.$refs.video?.textTracks) {
-        if (track.kind == 'captions'){
+        if (track.kind == "captions") {
           this.subtitlesData.availableSubtitles.push(track.label);
         }
       }
-      this.subtitlesData.selectedSubtitle = document.querySelector("track[kind='captions'][default]")?.label;
+      this.subtitlesData.selectedSubtitle = document.querySelector(
+        "track[kind='captions'][default]"
+      )?.label;
     },
     formatTime(time) {
       let zeroFormatter = Intl.NumberFormat(undefined, {
@@ -298,11 +320,15 @@ export default {
     handleLoadedMetaData(ev) {
       this.$emit("loadedmetadata", ev);
       this.videoDuration = this.formatTime(ev.target.duration);
-      let thumbnailTrackUrl = ev.target.querySelector("track[kind='thumbnails']")?.src;
-      if (thumbnailTrackUrl){
-        fetch(thumbnailTrackUrl).then(res => res.text()).then(input => {
-          this.addThumbnailsData(webvtt.parse(input), thumbnailTrackUrl);
-        })
+      let thumbnailTrackUrl = ev.target.querySelector(
+        "track[kind='thumbnails']"
+      )?.src;
+      if (thumbnailTrackUrl) {
+        fetch(thumbnailTrackUrl)
+          .then((res) => res.text())
+          .then((input) => {
+            this.addThumbnailsData(webvtt.parse(input), thumbnailTrackUrl);
+          });
       }
       this.addSubtitleData();
     },
@@ -320,13 +346,21 @@ export default {
       let previewTimeValue = parseFloat(
         mousePercentage * this.$refs.video.duration
       ).toFixed(2);
-      if(this.thumbnailsData){
+      if (this.thumbnailsData) {
         let index = (previewTimeValue / this.thumbnailsData.diff) | 0;
         let thumbnailInfo = this.thumbnailsData.parsedThumbnails[index];
-        if (thumbnailInfo){
-          let image = this.thumbnailsData.images[thumbnailInfo.imgSrc]
-          this.thumbnailsData.ctx.drawImage(image, thumbnailInfo.x, thumbnailInfo.y, thumbnailInfo.w, thumbnailInfo.h,
-            0, 0, this.$refs.canvas.width, this.$refs.canvas.height
+        if (thumbnailInfo) {
+          let image = this.thumbnailsData.images[thumbnailInfo.imgSrc];
+          this.thumbnailsData.ctx.drawImage(
+            image,
+            thumbnailInfo.x,
+            thumbnailInfo.y,
+            thumbnailInfo.w,
+            thumbnailInfo.h,
+            0,
+            0,
+            this.$refs.canvas.width,
+            this.$refs.canvas.height
           );
         }
       }
@@ -458,7 +492,7 @@ export default {
   transition: visibility 150ms ease-in-out;
   left: calc(var(--seek-percentage) * 100%);
   height: var(--height);
-  aspect-ratio: 16 / 9 ;
+  aspect-ratio: 16 / 9;
   margin-left: calc(0px - var(--height) * 8 / 9);
   justify-content: flex-end;
   text-align: center;
@@ -469,8 +503,8 @@ export default {
   visibility: visible;
 }
 video::-webkit-media-text-track-container {
- overflow: visible !important;
- transform: translateY(-40px) !important;
+  overflow: visible !important;
+  transform: translateY(-40px) !important;
 }
 .thumbnail-img + .preview-time {
   z-index: 1;
@@ -484,5 +518,20 @@ video::-webkit-media-text-track-container {
 }
 .subtitles-container:hover .subtitles-menu {
   display: block;
+}
+.subtitle-item{
+  position: relative;
+  margin-left: 2px;
+}
+.subtitle-item.active::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 1rem;
+  left: 8px;
+  width: 7px;
+  height: 7px;
+  background-color: white;
+  border-radius: 50%;
 }
 </style>

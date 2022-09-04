@@ -1,6 +1,6 @@
 <template>
 <DefaultLayout>
-  <div class="default-layout-main pt-4">
+  <div class="main-container pt-4">
     <div class="mb-12 text-3xl">My Anime List</div>
     <div class="text-lg text-center" v-if="watchList.length == 0">No content has been added yet.</div>
     <GridLayout>

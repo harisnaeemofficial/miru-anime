@@ -1,17 +1,7 @@
 <template>
   <DefaultLayout :addScrollEvents="true">
-    <div v-if="$apollo.loading" class="flex px-12 mt-28 flex-col gap-y-10">
-      <div v-for="i in 3" :key="i">
-        <ShimmerBox height="1.5rem" width="200px" />
-        <div class="mt-4 flex gap-x-5">
-          <div v-for="i in 7" class="overflow-hidden" :key="i">
-            <ShimmerBox width="185px" height="256px" />
-            <div class="mt-3">
-              <ShimmerBox height="1rem" width="120px" />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div v-if="$apollo.loading">
+      <ShimmerPageGrid/>
     </div>
     <div v-else>
       <div class="pb-2">
@@ -19,7 +9,7 @@
           :trailer="homeFeed.banner_anime.trailer"
           :thumbnail="homeFeed.banner_anime.bannerImage"
         >
-          <div class="banner_anime_info lg:w-1/2 px-5">
+          <div class="banner_anime_info lg:w-1/2 px-14">
             <h1 class="text-5xl font-bold">
               {{
                 homeFeed.banner_anime.title.english ||
@@ -58,7 +48,7 @@
             </div>
           </div>
         </TrailerBanner>
-        <div class="mt-3 bg-white px-4">
+        <div class="main-container-fluid">
           <CategoryAnimeSlider
             categoryTitle="Recent Releases"
             :animes="recently_released_animes"
@@ -110,7 +100,7 @@ import { getRecentEpisodes } from "@/libs/anime-lib";
 import { transformFields } from "@/libs/utils-lib";
 import WatchListButton from "@/components/WatchListButton.vue";
 import TrailerBanner from "@/components/TrailerBanner.vue";
-import ShimmerBox from "@/components/ShimmerBox.vue";
+import ShimmerPageGrid from "@/components/ShimmerPageGrid.vue";
 const feedLimit = 28;
 function randomizeAndSlice(data) {
   return data.sort(() => 0.5 - Math.random()).slice(0, feedLimit);
@@ -393,7 +383,7 @@ export default {
     TagBadge,
     WatchListButton,
     TrailerBanner,
-    ShimmerBox,
+    ShimmerPageGrid,
   },
   methods: {
     getWatchedAnimes() {

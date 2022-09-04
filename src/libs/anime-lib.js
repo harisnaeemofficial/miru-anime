@@ -3,7 +3,8 @@ import { META, ANIME } from "@consumet/extensions";
 import {
     anilistMediaDetailQuery,
   } from '@consumet/extensions/dist/utils/utils';
-  import anilistAiringScheduleQuery from '../queries/scheduleQuery';
+import { Genres } from '@consumet/extensions';
+import anilistAiringScheduleQuery from '../queries/scheduleQuery';
 var anime_provider = '';
 const anilist = new META.Anilist();
 setAnimeProvider('Zoro');
@@ -46,6 +47,8 @@ export async function getWeekAiringSchedule(start, end){
   } while(hasNextPage);
   return airingSchedules;
 }
+export const animeGenres = Genres;
+
 export async function getAnimeFromAnilistOnly(animeId){
     const animeInfo = {
         id: animeId,

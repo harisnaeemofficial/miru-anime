@@ -1,6 +1,6 @@
 <template>
   <DefaultLayout>
-    <div class="default-layout-main pt-4">
+    <div class="main-container pt-4">
       <div class="grid grid-cols-7 gap-x-8 justify-between">
         <div v-for="(n, day) in 7" :key="n">
           <div class="text-lg">
