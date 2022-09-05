@@ -1,21 +1,7 @@
 <template>
-  <button
+  <SecondaryButton
     v-if="type == 'button'"
     @click.prevent="toggleInWatchList"
-    class="
-      border-2 border-white
-      flex
-      items-center
-      text-white
-      transition-all
-      hover:bg-[#0000003b] hover:border-slate-300
-      text-xl
-      px-7
-      py-1
-      rounded
-      font-meduim
-      min-h-[32px]
-    "
   >
     <span class="text-3xl">
       <BIconPlus v-if="!isInWatchList" />
@@ -24,7 +10,7 @@
     <span class="mr-2">
       {{ !isInWatchList ? "Add to" : "Remove from" }} Watchlist
     </span>
-  </button>
+  </SecondaryButton>
   <div
     class="flex gap-x-3 items-center 
     px-4
@@ -49,6 +35,7 @@ import {
 } from "bootstrap-icons-vue";
 import watchListStore from "@/stores/watchListStore";
 import notificationStore from "@/stores/notificationStore";
+import SecondaryButton from "./SecondaryButton.vue";
 export default {
   name: "WatchListButton",
   data() {
@@ -88,7 +75,8 @@ export default {
     BIconDash,
     BIconPlusCircleFill,
     BIconCheckCircleFill,
-  },
+    SecondaryButton
+},
 };
 </script>
 

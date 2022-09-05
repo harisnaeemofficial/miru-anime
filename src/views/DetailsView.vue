@@ -13,7 +13,7 @@
                 genre
               }}</TagBadge>
               <span class="dot" />
-              <span class="text-lg text-bold">{{ anilistInfo.format }}</span>
+              <span class="text-lg text-bold">{{ anime.type }}</span>
               <span class="dot" />
               <span class="text-lg text-bold">{{ anime.releaseDate }}</span>
               <span v-if="anime.duration">
@@ -44,7 +44,10 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="+anime.id" :title="preferredTitle(anime.title)" />
+              <WatchListButton
+                :id="+anime.id"
+                :title="preferredTitle(anime.title)"
+              />
             </div>
           </div>
         </div>
@@ -109,7 +112,7 @@
             <div class="mt-4" v-if="$apollo.loading || isLoading">
               <ShimmerBox height="70vh" />
             </div>
-            <div :style="{'--theme-color': anime.color}" v-else>
+            <div :style="{ '--theme-color': anime.color }" v-else>
               <TabNavigation
                 v-if="availableTabs.length > 0"
                 :tabs="availableTabs"
@@ -151,42 +154,75 @@
                   <div
                     class="
                       grid
-                      xl:grid-cols-6
-                      lg:grid-cols-5
-                      md:grid-cols-4
-                      sm:grid-cols-3
+                      overflow-hidden
+                      2xl:grid-cols-5
+                      lg:grid-cols-4
+                      md:grid-cols-3
+                      sm:grid-cols-2
                       gap-y-4
                     "
                   >
-                    <div
-                      class="w-[150px] relative"
-                      v-for="relation in anilistInfo?.relations"
+                    <router-link
+                      v-for="relation in anime.relations"
                       :key="relation.id"
+                      :to="`/details/${relation.id}`"
                     >
-                      <router-link :to="`/details/${relation.id}`">
-                        <img class="w-full h-60" :src="relation.image" />
-                        <div class="w-full text-center">
-                          {{ relation.title.english || relation.title.romaji}}
+                      <AnimeTile :anime="relation" />
+                    </router-link>
+                  </div>
+                </template>
+
+                <template v-slot:characters>
+                  <div
+                    class="
+                      grid
+                      mt-5
+                      xl:grid-cols-2
+                      gap-y-8
+                      lg:grid-cols-1
+                      sm:grid-cols-1
+                    "
+                  >
+                    <div
+                      class="
+                        flex
+                        bg-slate-50
+                        border-slate-500
+                        rounded
+                        justify-between
+                        shadow
+                        w-[400px]
+                        h-[80px]
+                      "
+                      v-for="character in anime.characters"
+                      :key="character.id"
+                    >
+                      <div class="flex gap-x-3">
+                        <img class="rounded-l" :src="character.image" />
+                        <div class="flex py-3 flex-col justify-between">
+                          <span> {{ character.name.userPreferred }}</span>
+                          <span class="text-xs text-gray-500">{{
+                            character.role
+                          }}</span>
                         </div>
-                        <div
-                          class="
-                            absolute
-                            top-0
-                            text-center
-                            bg-transparent-dark
-                            text-white
-                            w-full
-                          "
+                      </div>
+                      <div class="flex flex-row-reverse gap-x-4">
+                        <img
+                          class="rounded-r"
+                          :src="character.voiceActors.at(-1)?.image"
+                        />
+                        <span class="py-3 text-right">
+                          {{
+                            character.voiceActors.at(-1)?.name.userPreferred
+                          }}</span
                         >
-                          {{ relation.relationType.replace("_", " ") }}
-                        </div>
-                      </router-link>
+                      </div>
                     </div>
                   </div>
                 </template>
               </TabNavigation>
               <div
-                v-else
+                v-else-if="anime.episodes?.length < 1"
                 class="flex flex-col items-center justify-center h-full"
               >
                 <h2 class="text-3xl font-bold">
@@ -209,7 +245,6 @@
 </template>
 <script>
 import config from "../config.json";
-import gql from "graphql-tag";
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
 import ImageBanner from "@/components/ImageBanner.vue";
 import TagBadge from "@/components/TagBadge.vue";
@@ -229,9 +264,14 @@ import {
   getAllAnimeProviders,
   setAnimeProvider,
 } from "@/libs/anime-lib";
-import { createWatchId, transformFields, preferredTitle } from "@/libs/utils-lib";
+import {
+  createWatchId,
+  transformFields,
+  preferredTitle,
+} from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
 import { getOption, setOption } from "@/libs/settings-lib";
+import AnimeTile from "@/components/AnimeTile.vue";
 
 export default {
   name: "DetailsView",
@@ -239,67 +279,17 @@ export default {
     return {
       isLoading: true,
       anime: null,
-      anilistInfo: null,
       availableTabs: [],
       watchedEpisodes: [],
       playBtnState: {},
       selected_provider: null,
       provider_list: [],
-      preferredTitle
+      preferredTitle,
     };
-  },
-  apollo: {
-    anilistInfo: {
-      query: () => gql`
-        query ($id: Int!) {
-          Media(id: $id) {
-            format
-            episodes
-            relations {
-              edges {
-                relationType(version: 2)
-                node {
-                  type
-                  id
-                  format
-                  coverImage {
-                    large
-                  }
-                  title {
-                    english
-                    romaji
-                  }
-                }
-              }
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          id: this.$route.params.animeId,
-        };
-      },
-      update({ Media }) {
-        let relations = Media.relations.edges
-          .map((relation) => {
-            return {
-              ...transformFields(relation.node),
-              relationType: relation.relationType,
-            };
-          })
-          .filter(
-            (anime) =>
-              anime.type == "ANIME" &&
-              !config.banned_formats.includes(anime.format)
-          );
-        return { relations, format: Media.format, episodes: Media.episodes };
-      },
-    },
   },
   created() {
     this.provider_list = getAllAnimeProviders();
-    this.selected_provider = getOption('provider');
+    this.selected_provider = getOption("provider");
     setAnimeProvider(this.selected_provider);
     this.$watch(() => this.$route.params, this.getAnime, { immediate: true });
   },
@@ -311,11 +301,21 @@ export default {
         getAnimeInfo(animeId)
           .then((anime) => (this.anime = anime))
           .catch(
-            async () => (this.anime = await getAnimeFromAnilistOnly(animeId))
+            async () =>
+              (this.anime = transformFields(
+                await getAnimeFromAnilistOnly(animeId)
+              ))
           )
           .then(() => {
             this.anime.id = +this.anime.id;
-            this.anime.episodes = this.anime.episodes?.filter(ep => ep.id) || [];
+            this.anime.relations = this.anime.relations
+              .map((a) => ({
+                ...a,
+                genres: [a.relationType.replace("_", " ")],
+              }))
+              .filter(({ type }) => !config.banned_formats.includes(type));
+            this.anime.episodes =
+              this.anime.episodes?.filter((ep) => ep.id) || [];
             this.isLoading = false;
             this.updatePlayBtnState();
             this.getAvailableTabs();
@@ -328,7 +328,7 @@ export default {
     selectProvider(e) {
       if (setAnimeProvider(e.target.value)) {
         this.selected_provider = e.target.value;
-        setOption('provider', this.selected_provider);
+        setOption("provider", this.selected_provider);
         this.getAnime();
       }
     },
@@ -347,30 +347,32 @@ export default {
     getAvailableTabs() {
       let availableTabs = [];
       if (
-        this.anime?.episodes &&
+        this.anime.episodes &&
         this.anime.episodes.length != 0 &&
-        this.anilistInfo?.format != "MOVIE" &&
-        this.anime?.status != "Not yet aired"
+        this.anime.type != "MOVIE" &&
+        this.anime.status != "Not yet aired"
       )
         availableTabs.push("episodes");
-      if (this.anime?.trailer?.id) availableTabs.push("trailer");
-      if (this.anilistInfo?.relations.length > 0) availableTabs.push("related");
+      if (this.anime.trailer?.id) availableTabs.push("trailer");
+      if (this.anime.relations.length > 0) availableTabs.push("related");
       this.availableTabs = availableTabs;
+      if (this.anime.characters.length > 0) availableTabs.push("characters");
     },
     updatePlayBtnState() {
       let btnText = "Start Watching";
       let currentEp = this.watchedEpisodes[0];
       let firstEp = this.anime?.episodes[0];
-      let epId = null, epNo = firstEp?.number || 1;
+      let epId = null,
+        epNo = firstEp?.number || 1;
       if (this.anime?.episodes != undefined) {
-        if (currentEp){
-        epNo =
-          currentEp.watchTime / currentEp.episodeDuration >=
-          config.episode_watched_ratio
-            ? currentEp.episodeNumber + 1
-            : currentEp.episodeNumber;
+        if (currentEp) {
+          epNo =
+            currentEp.watchTime / currentEp.episodeDuration >=
+            config.episode_watched_ratio
+              ? currentEp.episodeNumber + 1
+              : currentEp.episodeNumber;
         }
-        epId = this.anime.episodes.find(ep => ep.number == epNo)?.id;
+        epId = this.anime.episodes.find((ep) => ep.number == epNo)?.id;
         if (this.watchedEpisodes.length > 1 && epId == undefined) {
           btnText = "Watch Again";
           epNo = firstEp.number;
@@ -399,6 +401,7 @@ export default {
     EpisodesList,
     EpisodeItem,
     ShimmerBox,
+    AnimeTile,
   },
 };
 </script>

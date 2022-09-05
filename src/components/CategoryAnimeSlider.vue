@@ -47,7 +47,7 @@ export default {
   },
   props: {
     categoryTitle: String,
-    viewAll: String,
+    viewAll: [String, Boolean],
     animes: Array,
   },
   components: {

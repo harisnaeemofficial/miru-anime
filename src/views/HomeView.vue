@@ -357,7 +357,7 @@ export default {
           .map(transformFields)
           .filter(
             (anime) =>
-              anime.status != "RELEASING" ||
+              anime.status != "Ongoing" ||
               !episodesObj[anime.id].completed ||
               (anime.nextAiringEpisode &&
                 anime.nextAiringEpisode.episode - episodesObj[anime.id].num >=
@@ -374,10 +374,9 @@ export default {
             return rec_list
               .concat(
                 anime.recommendations.nodes.map(
-                  ({ mediaRecommendation }) => mediaRecommendation
+                  ({ mediaRecommendation }) => transformFields(mediaRecommendation)
                 )
               )
-              .map(transformFields);
           }, [])
           .filter((anime) => !this.watchedAnimeIds.includes("" + anime.id));
         return {

@@ -16,11 +16,11 @@
             <BIconCheck class="text-3xl"/> OKAY
           </span>
         </PrimaryButton>
-        <PrimaryButton @click="this.onCancel">
+        <SecondaryButton @click="this.onCancel">
           <span class="flex items-center gap-x-1 mr-5">
             <BIconX class="text-3xl"/>  CANCEL
           </span>
-        </PrimaryButton>
+        </SecondaryButton>
       </div>
     </template>
   </ModalBox>
@@ -30,6 +30,7 @@
 import { BIconCheck, BIconX } from 'bootstrap-icons-vue';
 import ModalBox from './ModalBox.vue';
 import PrimaryButton from './PrimaryButton.vue'
+import SecondaryButton from './SecondaryButton.vue';
 export default {
     data(){
         return { 
@@ -60,6 +61,6 @@ export default {
           this.handleCancel = null;
       }
     },
-    components: { ModalBox, PrimaryButton, BIconCheck, BIconX }
+    components: { ModalBox, PrimaryButton, BIconCheck, BIconX, SecondaryButton }
 }
 </script>

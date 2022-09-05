@@ -78,7 +78,7 @@
     >
       <div class="relative text-white py-2 px-3 w-full h-full">
         <div class="mb-2">
-          <span v-if="anime.format">{{ anime.format }}</span>
+          <span v-if="anime.type">{{ anime.type }}</span>
           <span v-if="anime.releaseDate">
             <span class="dot" />
             {{ anime.releaseDate }}
