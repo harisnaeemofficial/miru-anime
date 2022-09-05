@@ -1,5 +1,6 @@
 {
     "anilist_graphql_api": "https://graphql.anilist.co",
     "banned_formats": ["MUSIC", "MANGA", "NOVEL", "TV_SHORT"],
-    "episode_watched_ratio": 0.95
+    "episode_watched_ratio": 0.95,
+    "feed_limit": 28
 }

@@ -15,7 +15,7 @@
               <span class="text-primary-green">#{{ i + 1 }}</span> this season
             </h1>
             <h1 class="mt-8 text-5xl font-bold">
-              {{ anime.title.english || anime.title.userPreferred }}
+              {{ preferredTitle(anime.title) }}
             </h1>
             <div class="mt-4">
               <TagBadge v-for="genre in anime.genres" :key="genre">{{
@@ -39,7 +39,10 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="anime.id" :title="anime.title.english || anime.title.userPreferred" />
+              <WatchListButton
+                :id="anime.id"
+                :title="anime.title.english || anime.title.userPreferred"
+              />
             </div>
           </div>
         </div>
@@ -50,7 +53,7 @@
           :key="key"
           :animes="animes"
           :categoryTitle="animeGenres[key]"
-          viewAll="?collection=1024"
+          :viewAll="`?collection=${$route.params.browse_type}-${key.toLocaleLowerCase()}`"
         />
       </div>
     </div>
@@ -58,9 +61,10 @@
 </template>
 
 <script>
+import config from '@/config.json';
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { BIconInfoCircle } from "bootstrap-icons-vue";
-import { getCurrentSeason, transformFields } from "@/libs/utils-lib";
+import { getCurrentSeason, transformFields, preferredTitle } from "@/libs/utils-lib";
 import gql from "graphql-tag";
 import SliderBanner from "@/components/SliderBanner.vue";
 import WatchListButton from "@/components/WatchListButton.vue";
@@ -94,7 +98,8 @@ function browseQuery() {
         }
         title {
           english
-          userPreferred
+          romaji
+          native
         }
       }
     }
@@ -105,7 +110,12 @@ function browseQuery() {
 }
 export default {
   data() {
-    return { browseFeed: null, bannerAnimes: null, animeGenres };
+    return {
+      browseFeed: null,
+      bannerAnimes: null,
+      animeGenres,
+      preferredTitle,
+    };
   },
   components: {
     DefaultLayout,
@@ -147,7 +157,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -170,7 +181,7 @@ export default {
       variables() {
         return {
           format: this.anilist_format(),
-          perPage: 28,
+          perPage: config.feed_limit,
         };
       },
       update(data) {

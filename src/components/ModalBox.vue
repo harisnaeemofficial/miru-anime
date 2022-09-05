@@ -1,6 +1,6 @@
 <template>
-    <div v-if="show" class="fixed top-0 left-0 w-screen overflow-hidden h-screen z-50">
-        <div class="modal transition-all bg-zinc-900 color-white h-auto w-[560px] mt-24 mx-auto">
+    <div v-if="show" class="fixed text-white top-0 left-0 w-screen overflow-hidden h-screen z-50">
+        <div class="modal transition-all rounded bg-zinc-900 color-white h-auto w-[560px] mt-24 mx-auto">
             <div class="modal-header font-bold border-b-zinc-400 border-b h-[52px] flex justify-end">
                 <slot name="modalHeader" />
                 <button @click="$emit('close')" class="w-[37px] h-[37px] m-2">
@@ -20,7 +20,10 @@
 import { BIconX } from 'bootstrap-icons-vue';
 export default {
     props: {
-        show: Boolean
+        show: {
+            type: Boolean,
+            default: true
+        }
     },
     components: {
         BIconX

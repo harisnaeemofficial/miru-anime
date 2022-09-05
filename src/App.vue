@@ -5,15 +5,18 @@
       {{ notificationStore.notification }}
     </div>
   </div>
+  <CollectionView/>
 </template>
 <script>
 import notificationStore from "@/stores/notificationStore";
+import CollectionView from "./views/CollectionView.vue";
 export default {
-  data(){
-    return {
-      notificationStore
-    }
-  }
+    data() {
+        return {
+            notificationStore
+        };
+    },
+    components: { CollectionView }
 }
 </script>
 <style>

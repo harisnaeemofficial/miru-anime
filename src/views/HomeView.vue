@@ -1,7 +1,7 @@
 <template>
   <DefaultLayout :addScrollEvents="true">
     <div v-if="$apollo.loading">
-      <ShimmerPageGrid/>
+      <ShimmerPageGrid />
     </div>
     <div v-else>
       <div class="pb-2">
@@ -11,10 +11,7 @@
         >
           <div class="banner_anime_info lg:w-1/2 px-14">
             <h1 class="text-5xl font-bold">
-              {{
-                homeFeed.banner_anime.title.english ||
-                homeFeed.banner_anime.title.userPreferred
-              }}
+              {{ preferredTitle(homeFeed.banner_anime.title) }}
             </h1>
             <div class="mt-4">
               <TagBadge
@@ -44,7 +41,10 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="homeFeed.banner_anime.id" :title="homeFeed.banner_anime.title.english || homeFeed.banner_anime.title.userPreferred" />
+              <WatchListButton
+                :id="homeFeed.banner_anime.id"
+                :title="preferredTitle(homeFeed.banner_anime.title)"
+              />
             </div>
           </div>
         </TrailerBanner>
@@ -56,14 +56,20 @@
           <CategoryAnimeSlider
             categoryTitle="Trending Now"
             :animes="homeFeed.trending_animes"
+            viewAll="?collection=trending-now"
           />
           <CategoryAnimeSlider
             categoryTitle="Continue Watching"
             :animes="homeFeed.continue_watch_animes"
+            :viewAll="
+              continueWatchAnimes.length > feedLimit &&
+              '?collection=continue-watch'
+            "
           />
           <CategoryAnimeSlider
             categoryTitle="Upcoming Animes"
             :animes="homeFeed.upcoming_animes"
+            viewAll="?collection=upcoming"
           />
           <CategoryAnimeSlider
             categoryTitle="Recommended"
@@ -72,19 +78,23 @@
           <CategoryAnimeSlider
             categoryTitle="All Time Popular"
             :animes="homeFeed.popular_animes"
+            viewAll="?collection=all-time-popular"
           />
           <CategoryAnimeSlider
             categoryTitle="Top Airing"
             :animes="homeFeed.top_airing"
+            viewAll="?collection=top-airing"
           />
           <CategoryAnimeSlider
             categoryTitle="Anime Movies"
             :animes="homeFeed.anime_movies"
+            viewAll="?collection=movies"
           />
         </div>
       </div>
     </div>
   </DefaultLayout>
+  <ConfirmDialogue ref="confirmDialogue" />
 </template>
 
 <script>
@@ -95,16 +105,19 @@ import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
 import TagBadge from "@/components/TagBadge.vue";
+import notificationStore from "@/stores/notificationStore";
 import { sendEventAsync } from "@/libs/ipc-lib";
 import { getRecentEpisodes } from "@/libs/anime-lib";
-import { transformFields } from "@/libs/utils-lib";
+import {
+  transformFields,
+  preferredTitle,
+  randomizeAndSlice,
+} from "@/libs/utils-lib";
 import WatchListButton from "@/components/WatchListButton.vue";
 import TrailerBanner from "@/components/TrailerBanner.vue";
 import ShimmerPageGrid from "@/components/ShimmerPageGrid.vue";
-const feedLimit = 28;
-function randomizeAndSlice(data) {
-  return data.sort(() => 0.5 - Math.random()).slice(0, feedLimit);
-}
+import ConfirmDialogue from "@/components/ConfirmDialogue.vue";
+
 export default {
   name: "HomeView",
   apollo: {
@@ -135,7 +148,8 @@ export default {
             description
             title {
               english
-              userPreferred
+              romaji
+              native
             }
             trailer {
               id
@@ -162,7 +176,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -182,7 +197,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -203,7 +219,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -224,7 +241,8 @@ export default {
                     }
                     title {
                       english
-                      userPreferred
+                      romaji
+                      native
                     }
                   }
                 }
@@ -250,7 +268,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -273,7 +292,8 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
@@ -295,20 +315,24 @@ export default {
               }
               title {
                 english
-                userPreferred
+                romaji
+                native
               }
             }
           }
         }
       `,
       variables() {
-        let watchedIds = randomizeAndSlice(this.watchedAnimeIds);
+        let watchedIds = randomizeAndSlice(
+          this.watchedAnimeIds,
+          this.feedLimit
+        );
         return {
           banned_formats: config.banned_formats,
-          limit: feedLimit,
+          limit: this.feedLimit,
           recommendationMax: Math.max(
             5,
-            Math.ceil(feedLimit / watchedIds.length)
+            Math.ceil(this.feedLimit / watchedIds.length)
           ),
           watchedIds,
           continueWatchIds: this.continueWatchAnimes.map(
@@ -325,7 +349,7 @@ export default {
           episodesObj[anime.animeId] = {
             num: anime.episodeNumber,
             completed:
-              (anime.watchTime / anime.episodeDuration) >=
+              anime.watchTime / anime.episodeDuration >=
               config.episode_watched_ratio,
           };
         }
@@ -336,9 +360,13 @@ export default {
               anime.status != "RELEASING" ||
               !episodesObj[anime.id].completed ||
               (anime.nextAiringEpisode &&
-                anime.nextAiringEpisode.episode - episodesObj[anime.id].num >= 2)
+                anime.nextAiringEpisode.episode - episodesObj[anime.id].num >=
+                  2)
           )
-          .map(anime => ({...anime, row: true}));
+          .map((anime) => ({
+            ...anime,
+            removeWatchedAnime: this.removeWatchedAnime,
+          }));
         let trending_animes = data.trending_animes.media.map(transformFields);
         let upcoming_animes = data.upcoming_animes.media.map(transformFields);
         let recommended = data.recommended_animes.media
@@ -376,6 +404,8 @@ export default {
       watchedAnimeIds: [],
       continueWatchAnimes: [],
       recently_released_animes: [],
+      preferredTitle,
+      feedLimit: config.feed_limit,
     };
   },
   components: {
@@ -387,6 +417,7 @@ export default {
     WatchListButton,
     TrailerBanner,
     ShimmerPageGrid,
+    ConfirmDialogue,
   },
   methods: {
     getWatchedAnimes() {
@@ -401,8 +432,30 @@ export default {
     },
     getRecentAnimeReleases() {
       getRecentEpisodes().then((data) => {
-        this.recently_released_animes = data.results
+        this.recently_released_animes = data.results;
       });
+    },
+    removeWatchedAnime(id) {
+      this.$refs.confirmDialogue
+        .show(
+          "You won't see this show in Continue Watching, and your watch progress will be reset. Are you sure you continue?"
+        )
+        .then(() => {
+          sendEventAsync("db:removeWatchedAnime", id).then(() => {
+            this.homeFeed.continue_watch_animes =
+              this.homeFeed.continue_watch_animes.filter((a) => {
+                if (a.id === id) {
+                  notificationStore.setNotification(
+                    `${preferredTitle(
+                      a.title
+                    )} has been removed from your Continue Watch`
+                  );
+                  return false;
+                }
+                return true;
+              });
+          });
+        }).catch(()=>{});
     },
   },
 };

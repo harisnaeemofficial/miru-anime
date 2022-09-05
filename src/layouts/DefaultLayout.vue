@@ -13,7 +13,7 @@
                 <router-link class="nav-link" to="/my-list">My List</router-link>
             </ul>
             <div class="search-container">
-                <form @submit="searchTitle" id="search-form" :class="{'expanded': searchBarVisible}" class="rounded-md py-1.5 pl-2 pr-3 flex items-center leading-6">
+                <form @submit.prevent id="search-form" :class="{'expanded': searchBarVisible}" class="rounded-md py-1.5 pl-2 pr-3 flex items-center leading-6">
                     <label class="hover:cursor-pointer" @click="searchBarVisible = true" for="search-input">
                         <BIconSearch class="ml-2 mr-3 text-xl"/>
                     </label>
@@ -47,9 +47,6 @@ export default {
         },
         closeSearchBar(){
             this.searchBarVisible = false;
-        },
-        searchTitle(e){
-            e.preventDefault();
         },
         onDocumentScroll(){
             if (this.searchQuery !== '') return;

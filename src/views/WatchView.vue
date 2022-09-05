@@ -60,9 +60,10 @@ import config from '../config.json';
 import BackLayout from "@/layouts/BackLayout.vue";
 import VideoPlayer from "@/components/VideoPlayer.vue"
 import { BIconPlayFill } from "bootstrap-icons-vue";
-import { getAnimeInfo, getEpisodeSources } from "@/libs/anime-lib";
+import { getAnimeInfo, getEpisodeSources, setAnimeProvider } from "@/libs/anime-lib";
 import { createWatchId, decodeWatchId } from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
+import { getOption } from '@/libs/settings-lib';
 
 export default {
   name: "WatchView",
@@ -138,11 +139,12 @@ export default {
       this.seekToTime(this.watchInfo.skipIntro.end);
     },
   },
-  mounted() {
+  created(){
+    setAnimeProvider(getOption("provider"));
     this.$watch(() => this.$route.params.watchId, this.updateWatchInfo, {
       immediate: true,
     });
-  },
+  }
 };
 </script>
 

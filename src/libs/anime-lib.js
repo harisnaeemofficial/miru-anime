@@ -5,28 +5,18 @@ import {
   } from '@consumet/extensions/dist/utils/utils';
 import { Genres } from '@consumet/extensions';
 import anilistAiringScheduleQuery from '../queries/scheduleQuery';
-var anime_provider = '';
 const anilist = new META.Anilist();
-setAnimeProvider('Zoro');
 
-export function getAllAnimeProviders(){
-  return Object.keys(ANIME);
-}
 export function setAnimeProvider(provider){
   let new_provider_class = ANIME[provider];
   if (new_provider_class === undefined) return false;
   const new_anime_provider = new ANIME[provider];
   anilist.provider = new_anime_provider;
-  anime_provider = provider;
   return true;
 }
-export const getAnimeProvider = () => anime_provider;
-export async function getAnimeInfo(animeId){
-    return await anilist.fetchAnimeInfo(animeId);
-}
-export async function getEpisodeSources(episodeId){
-    return await anilist.provider.fetchEpisodeSources(episodeId);
-}
+export const getAllAnimeProviders = () => Object.keys(ANIME);
+export const getAnimeInfo = anilist.fetchAnimeInfo;
+export const getEpisodeSources = anilist.fetchEpisodeSources;
 export const getRecentEpisodes = anilist.fetchRecentEpisodes;
 export async function getWeekAiringSchedule(start, end){
   let hasNextPage = true, page = 1, airingSchedules = [];

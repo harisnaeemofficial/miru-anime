@@ -5,7 +5,7 @@
       <ImageBanner v-else :image="anime.cover">
         <div class="px-5">
           <h1 class="text-5xl font-bold line-clamp-1">
-            {{ anime.title?.english || anime.title?.romaji }}
+            {{ preferredTitle(anime.title) }}
           </h1>
           <div class="ml-[250px] mt-9 px-9">
             <div>
@@ -13,7 +13,7 @@
                 genre
               }}</TagBadge>
               <span class="dot" />
-              <span class="text-lg text-bold">{{ anilistInfo?.format }}</span>
+              <span class="text-lg text-bold">{{ anilistInfo.format }}</span>
               <span class="dot" />
               <span class="text-lg text-bold">{{ anime.releaseDate }}</span>
               <span v-if="anime.duration">
@@ -44,7 +44,7 @@
                   </span>
                 </PrimaryButton>
               </router-link>
-              <WatchListButton :id="+anime.id" :title="anime.title.english || anime.title.romaji" />
+              <WatchListButton :id="+anime.id" :title="preferredTitle(anime.title)" />
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@
                   <div>
                     <EpisodesList
                       :episodes="anime.episodes"
-                      :animeId="anime.id"
+                      :animeId="+anime.id"
                       :watched="watchedEpisodes"
                     />
                     <div class="text-lg mt-3" v-if="anime.nextAiringEpisode">
@@ -228,10 +228,10 @@ import {
   getAnimeFromAnilistOnly,
   getAllAnimeProviders,
   setAnimeProvider,
-  getAnimeProvider,
 } from "@/libs/anime-lib";
-import { createWatchId, transformFields } from "@/libs/utils-lib";
+import { createWatchId, transformFields, preferredTitle } from "@/libs/utils-lib";
 import { sendEventAsync } from "@/libs/ipc-lib";
+import { getOption, setOption } from "@/libs/settings-lib";
 
 export default {
   name: "DetailsView",
@@ -245,6 +245,7 @@ export default {
       playBtnState: {},
       selected_provider: null,
       provider_list: [],
+      preferredTitle
     };
   },
   apollo: {
@@ -297,16 +298,15 @@ export default {
     },
   },
   created() {
-    this.$watch(() => this.$route.params, this.getAnime, { immediate: true });
-  },
-  mounted() {
     this.provider_list = getAllAnimeProviders();
-    this.selected_provider = getAnimeProvider();
+    this.selected_provider = getOption('provider');
+    setAnimeProvider(this.selected_provider);
+    this.$watch(() => this.$route.params, this.getAnime, { immediate: true });
   },
   methods: {
     getAnime() {
       this.isLoading = true;
-      let animeId = this.$route.params.animeId;
+      let animeId = +this.$route.params.animeId;
       if (animeId) {
         getAnimeInfo(animeId)
           .then((anime) => (this.anime = anime))
@@ -314,6 +314,7 @@ export default {
             async () => (this.anime = await getAnimeFromAnilistOnly(animeId))
           )
           .then(() => {
+            this.anime.id = +this.anime.id;
             this.anime.episodes = this.anime.episodes?.filter(ep => ep.id) || [];
             this.isLoading = false;
             this.updatePlayBtnState();
@@ -327,6 +328,7 @@ export default {
     selectProvider(e) {
       if (setAnimeProvider(e.target.value)) {
         this.selected_provider = e.target.value;
+        setOption('provider', this.selected_provider);
         this.getAnime();
       }
     },

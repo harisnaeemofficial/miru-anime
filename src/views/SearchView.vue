@@ -16,12 +16,15 @@
 <script>
 import config from '../config.json';
 import AnimeTile from '@/components/AnimeTile.vue';
-import {transformFields} from '@/libs/utils-lib';
+import { transformFields, preferredTitle } from '@/libs/utils-lib';
 import gql from 'graphql-tag';
 import GridLayout from '@/layouts/GridLayout.vue';
 export default {
     data(){
-        return {results: null}
+        return { 
+            results: null,
+            preferredTitle
+        }
     },
     props: {
         query: String
@@ -42,7 +45,8 @@ export default {
                             }
                             title {
                                 english
-                                userPreferred
+                                romaji
+                                native
                             }
                         }
                     }

@@ -24,6 +24,8 @@ export const getLuminanceValue = (RGBColor) => {
     const B = parseInt(RGBColor.substr(5, 2), 16);
     return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 }
+export const preferredTitle = (title) => title.english || title.romaji || title.native;
+export const randomizeAndSlice = (data, limit) => data.sort(() => 0.5 - Math.random()).slice(0, limit);
 export const getCurrentSeason = () => {
     const today = new Date();
     const month = today.getMonth();

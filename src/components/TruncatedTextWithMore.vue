@@ -6,7 +6,7 @@
             </h1>
         </template>
         <template v-slot:modalBody>
-                <slot name="text" />
+            <slot name="text" />
         </template>
     </ModalBox>    
     <div>

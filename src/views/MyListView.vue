@@ -43,7 +43,8 @@ export default {
                 }
                 title {
                   english
-                  userPreferred
+                  romaji
+                  native
                 }
               }
             }

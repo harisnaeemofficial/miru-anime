@@ -8,13 +8,13 @@
     </div>
     <div class="mt-2 flex items-start h-12">
       <p class="anime_tile__title grow line-clamp-2">
-        {{ anime.title.english || anime.title.userPreferred }}
+        {{ preferredTitle(anime.title) }}
       </p>
       <div class="relative">
         <button
           ref="contextMenuToggle"
           class="p-2 context-menu-btn"
-          @click="toggleContextMenu"
+          @click.prevent="toggleContextMenu"
         >
           <BIconThreeDotsVertical />
         </button>
@@ -36,17 +36,17 @@
           <div class="px-2 py-2 h-full">
             <ul>
               <li
+                @click.prevent
                 class="
                   rounded
-                  px-4
-                  py-2
                   hover:bg-slate-200
                 "
               >
-                <WatchListButton :id="+anime.id" :title="anime.title.english || anime.title.userPreferred" type="menu-item" />
+                <WatchListButton :id="+anime.id" :title="preferredTitle(anime.title)" type="menu-item" />
               </li>
               <li
-                v-if="anime.row"
+                v-if="anime.removeWatchedAnime"
+                @click.prevent="anime.removeWatchedAnime(anime.id)"
                 class="
                   flex
                   rounded
@@ -57,7 +57,7 @@
                   items-center
                 "
               >
-                <BIconXCircleFill class="text-xl" /> Remove from Row
+                <BIconXCircleFill class="text-xl" /> Remove from Group
               </li>
             </ul>
           </div>
@@ -112,7 +112,7 @@
             items-center
           "
         >
-          <BIconArrowRightCircleFill />
+          <BIconArrowRightCircleFill class="shadow-lg" />
         </div>
         <div
           v-if="anime.genres"
@@ -143,6 +143,7 @@
 
 <script>
 import TagBadge from "./TagBadge.vue";
+import { preferredTitle } from '@/libs/utils-lib';
 import {
   BIconHandThumbsUpFill,
   BIconXCircleFill,
@@ -154,11 +155,11 @@ export default {
   data() {
     return {
       contextMenuClosed: true,
+      preferredTitle
     };
   },
   methods: {
-    toggleContextMenu(e) {
-      e.preventDefault();
+    toggleContextMenu() {
       this.contextMenuClosed = !this.contextMenuClosed;
       this.applyBoxStyle();
     },

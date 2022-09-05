@@ -22,7 +22,7 @@
                 </div>
                 <div class="text-lg">
                   {{
-                    schedule.media.title.english || schedule.media.title.romaji
+                    preferredTitle(schedule.media.title)
                   }}
                 </div>
                 <div class="text-sm text-gray-500">
@@ -42,6 +42,7 @@
 import config from "../config.json";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { getWeekAiringSchedule } from "../libs/anime-lib";
+import { preferredTitle } from "@/libs/utils-lib";
 export default {
   data() {
     let today = new Date();
@@ -51,6 +52,7 @@ export default {
       today.getDate() - 1
     );
     return {
+      preferredTitle,
       weekSchedule: [],
       start,
       today

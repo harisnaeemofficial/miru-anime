@@ -1,7 +1,7 @@
 <template>
   <button
     v-if="type == 'button'"
-    @click="toggleInWatchList"
+    @click.prevent="toggleInWatchList"
     class="
       border-2 border-white
       flex
@@ -26,7 +26,9 @@
     </span>
   </button>
   <div
-    class="flex gap-x-3 items-center"
+    class="flex gap-x-3 items-center 
+    px-4
+    py-2"
     v-else-if="type == 'menu-item'"
     @click="toggleInWatchList"
   >
@@ -61,8 +63,7 @@ export default {
     },
   },
   methods: {
-    toggleInWatchList(e) {
-      e.preventDefault();
+    toggleInWatchList() {
       if (this.isInWatchList) {
         watchListStore.removeIdFromWatchList(this.id);
         notificationStore.setNotification(`${this.title} was removed from Your List`)

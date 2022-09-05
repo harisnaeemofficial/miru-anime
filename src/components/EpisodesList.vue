@@ -14,7 +14,7 @@ import EpisodeItem from './EpisodeItem.vue';
 export default {
     props: {
         episodes: Array,
-        animeId: String,
+        animeId: Number,
         watched: Array
     },
     methods: {
