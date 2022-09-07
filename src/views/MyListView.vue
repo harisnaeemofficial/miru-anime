@@ -14,10 +14,10 @@
 <script>
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import GridLayout from '@/layouts/GridLayout.vue';
-import { gql } from '@apollo/client/core';
 import { transformFields } from '@/libs/utils-lib';
 import AnimeTile from '@/components/AnimeTile.vue';
 import watchListStore from "@/stores/watchListStore";
+import { MY_LIST_QUERY } from '@/apollo/queries';
 export default {
     data() {
       return {
@@ -27,29 +27,7 @@ export default {
     },
     apollo: {
       watchList: {
-        query: gql`
-          query ($idList: [Int]!){
-            watchList: Page {
-              media(id_in: $idList){
-                id
-                genres
-                format
-                seasonYear
-                averageScore
-                description
-                coverImage {
-                  large
-                  color
-                }
-                title {
-                  english
-                  romaji
-                  native
-                }
-              }
-            }
-          }
-        `,
+        query: MY_LIST_QUERY,
         variables(){
           return {
             idList: watchListStore.watchListIds

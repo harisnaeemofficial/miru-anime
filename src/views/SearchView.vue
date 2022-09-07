@@ -17,8 +17,8 @@
 import config from '../config.json';
 import AnimeTile from '@/components/AnimeTile.vue';
 import { transformFields, preferredTitle } from '@/libs/utils-lib';
-import gql from 'graphql-tag';
 import GridLayout from '@/layouts/GridLayout.vue';
+import { SEARCH_QUERY } from '@/apollo/queries';
 export default {
     data(){
         return { 
@@ -31,27 +31,7 @@ export default {
     },
     apollo: {
         results: {
-            query: gql`query ($title: String!, $banned_formats: [MediaFormat]){
-                    results: Page {
-                        media(search: $title, type: ANIME, isAdult: false, format_not_in: $banned_formats){
-                            id
-                            genres
-                            format
-                            seasonYear
-                            averageScore
-                            coverImage {
-                                large
-                                color
-                            }
-                            title {
-                                english
-                                romaji
-                                native
-                            }
-                        }
-                    }
-                }
-            `,
+            query: SEARCH_QUERY,
             variables(){
                 return { title: this.query, banned_formats: config.banned_formats }
             },

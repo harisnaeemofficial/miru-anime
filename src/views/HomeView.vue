@@ -56,20 +56,19 @@
           <CategoryAnimeSlider
             categoryTitle="Trending Now"
             :animes="homeFeed.trending_animes"
-            viewAll="?collection=trending-now"
+            viewAll="?collection=trending_now"
           />
           <CategoryAnimeSlider
             categoryTitle="Continue Watching"
             :animes="homeFeed.continue_watch_animes"
             :viewAll="
               continueWatchAnimes.length > feedLimit &&
-              '?collection=continue-watch'
+              '?collection=continue_watch'
             "
           />
           <CategoryAnimeSlider
             categoryTitle="Upcoming Animes"
             :animes="homeFeed.upcoming_animes"
-            viewAll="?collection=upcoming"
           />
           <CategoryAnimeSlider
             categoryTitle="Recommended"
@@ -78,17 +77,17 @@
           <CategoryAnimeSlider
             categoryTitle="All Time Popular"
             :animes="homeFeed.popular_animes"
-            viewAll="?collection=all-time-popular"
+            viewAll="?collection=popular"
           />
           <CategoryAnimeSlider
             categoryTitle="Top Airing"
             :animes="homeFeed.top_airing"
-            viewAll="?collection=top-airing"
+            viewAll="?collection=top_airing"
           />
           <CategoryAnimeSlider
             categoryTitle="Anime Movies"
             :animes="homeFeed.anime_movies"
-            viewAll="?collection=movies"
+            viewAll="?collection=anime_movies"
           />
         </div>
       </div>
@@ -98,7 +97,6 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
 import config from "../config.json";
 import { BIconInfoCircle } from "bootstrap-icons-vue";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
@@ -117,211 +115,13 @@ import WatchListButton from "@/components/WatchListButton.vue";
 import TrailerBanner from "@/components/TrailerBanner.vue";
 import ShimmerPageGrid from "@/components/ShimmerPageGrid.vue";
 import ConfirmDialogue from "@/components/ConfirmDialogue.vue";
+import { HOME_FEED_QUERY } from "@/apollo/queries";
 
 export default {
   name: "HomeView",
   apollo: {
     homeFeed: {
-      query: () => gql`
-        query (
-          $watchedIds: [Int]
-          $continueWatchIds: [Int]
-          $limit: Int
-          $recommendationMax: Int
-          $banned_formats: [MediaFormat]
-        ) {
-          banner_anime: Media(
-            sort: [TRENDING_DESC, POPULARITY_DESC]
-            format_not_in: $banned_formats
-            type: ANIME
-            isAdult: false
-            status_in: [RELEASING, FINISHED]
-          ) {
-            id
-            genres
-            bannerImage
-            coverImage {
-              extraLarge
-            }
-            format
-            seasonYear
-            description
-            title {
-              english
-              romaji
-              native
-            }
-            trailer {
-              id
-              site
-              thumbnail
-            }
-          }
-          trending_animes: Page(perPage: $limit) {
-            media(
-              sort: TRENDING_DESC
-              format_not_in: $banned_formats
-              type: ANIME
-              isAdult: false
-              status: RELEASING
-            ) {
-              id
-              genres
-              format
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-          upcoming_animes: Page {
-            media(
-              status: NOT_YET_RELEASED
-              sort: [POPULARITY_DESC, TRENDING_DESC]
-            ) {
-              id
-              genres
-              format
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-          continue_watch_animes: Page(perPage: $limit) {
-            media(id_in: $continueWatchIds) {
-              id
-              status
-              format
-              genres
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              nextAiringEpisode {
-                episode
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-          recommended_animes: Page(perPage: $limit) {
-            media(id_in: $watchedIds, sort: POPULARITY_DESC) {
-              recommendations(perPage: $recommendationMax) {
-                nodes {
-                  mediaRecommendation {
-                    id
-                    genres
-                    format
-                    seasonYear
-                    averageScore
-                    description
-                    coverImage {
-                      color
-                      large
-                    }
-                    title {
-                      english
-                      romaji
-                      native
-                    }
-                  }
-                }
-              }
-            }
-          }
-          popular_animes: Page(perPage: $limit) {
-            media(
-              sort: POPULARITY_DESC
-              format_not_in: $banned_formats
-              type: ANIME
-              isAdult: false
-              status_not: NOT_YET_RELEASED
-            ) {
-              id
-              genres
-              format
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-          anime_movies: Page(perPage: $limit) {
-            media(
-              sort: TRENDING_DESC
-              type: ANIME
-              isAdult: false
-              format: MOVIE
-              status_not: NOT_YET_RELEASED
-            ) {
-              id
-              genres
-              format
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-          top_airing: Page(perPage: $limit) {
-            media(
-              sort: SCORE_DESC
-              status: RELEASING
-              type: ANIME
-              isAdult: false
-            ) {
-              id
-              genres
-              format
-              seasonYear
-              averageScore
-              coverImage {
-                color
-                large
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-        }
-      `,
+      query: () => HOME_FEED_QUERY,
       variables() {
         let watchedIds = randomizeAndSlice(
           this.watchedAnimeIds,

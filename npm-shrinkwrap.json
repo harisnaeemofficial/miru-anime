@@ -1610,7 +1610,7 @@
       }
     },
     "@consumet/extensions": {
-      "version": "git+https://github.com/consumet/consumet.ts.git#ecd143b8ed83732a6edf4782ef113e2ce5b5bb09",
+      "version": "git+https://github.com/consumet/consumet.ts.git#8e88462d85c0cb82617b19a80570e8ea5e2554de",
       "from": "git+https://github.com/consumet/consumet.ts.git",
       "requires": {
         "ascii-url-encoder": "^1.2.0",

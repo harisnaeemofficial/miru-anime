@@ -186,6 +186,7 @@
                     <div
                       class="
                         flex
+                        text-sm
                         bg-slate-50
                         border-slate-500
                         rounded
@@ -209,11 +210,11 @@
                       <div class="flex flex-row-reverse gap-x-4">
                         <img
                           class="rounded-r"
-                          :src="character.voiceActors.at(-1)?.image"
+                          :src="character.voiceActors.at(0)?.image"
                         />
                         <span class="py-3 text-right">
                           {{
-                            character.voiceActors.at(-1)?.name.userPreferred
+                            character.voiceActors.at(0)?.name.userPreferred
                           }}</span
                         >
                       </div>

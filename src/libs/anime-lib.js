@@ -4,7 +4,7 @@ import {
     anilistMediaDetailQuery,
   } from '@consumet/extensions/dist/utils/queries';
 import { Genres } from '@consumet/extensions';
-import anilistAiringScheduleQuery from '../queries/scheduleQuery';
+import { schedule_query } from '@/apollo/queries';
 const anilist = new META.Anilist();
 
 export function setAnimeProvider(provider){
@@ -26,7 +26,7 @@ export async function getWeekAiringSchedule(start, end){
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      query: anilistAiringScheduleQuery(start, end, page),
+      query: schedule_query(start, end, page),
     };
     const { data } = await axios.post(anilist.anilistGraphqlUrl, options).catch(() => {
       throw new Error('Schedule not found');

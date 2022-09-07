@@ -22,9 +22,9 @@
                 genre
               }}</TagBadge>
               <span class="dot" />
-              <span class="text-lg text-bold">{{ anime.format }}</span>
+              <span class="text-lg text-bold">{{ anime.type }}</span>
               <span class="dot" />
-              <span class="text-lg text-bold">{{ anime.seasonYear }}</span>
+              <span class="text-lg text-bold">{{ anime.releaseDate }}</span>
             </div>
             <p
               class="text-lg mt-2 line-clamp-6"
@@ -53,7 +53,7 @@
           :key="key"
           :animes="animes"
           :categoryTitle="animeGenres[key]"
-          :viewAll="`?collection=${$route.params.browse_type}-${key.toLocaleLowerCase()}`"
+          :viewAll="`?collection=${$route.params.browse_type}_${key.toLocaleLowerCase()}`"
         />
       </div>
     </div>
@@ -65,7 +65,7 @@ import config from '@/config.json';
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { BIconInfoCircle } from "bootstrap-icons-vue";
 import { getCurrentSeason, transformFields, preferredTitle } from "@/libs/utils-lib";
-import gql from "graphql-tag";
+import { BROWSE_BANNER_QUERY, browse_feed_query } from "@/apollo/queries"
 import SliderBanner from "@/components/SliderBanner.vue";
 import WatchListButton from "@/components/WatchListButton.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
@@ -74,40 +74,7 @@ import TagBadge from "@/components/TagBadge.vue";
 import { animeGenres } from "@/libs/anime-lib";
 import CategoryAnimeSlider from "@/components/CategoryAnimeSlider.vue";
 
-function browseQuery() {
-  return `
-    query ($format: MediaFormat, $perPage: Int){
-    ${Object.keys(animeGenres)
-      .map(
-        (key) => ` ${key}: Page(perPage: $perPage) {
-      media(
-        sort: POPULARITY_DESC
-        type: ANIME
-        format: $format
-        isAdult: false
-        genre_in: ["${animeGenres[key]}"]
-      ) {
-        id
-        genres
-        format
-        seasonYear
-        averageScore
-        coverImage {
-          color
-          large
-        }
-        title {
-          english
-          romaji
-          native
-        }
-      }
-    }
-    `
-      )
-      .join("")}
-  }`;
-}
+
 export default {
   data() {
     return {
@@ -129,41 +96,7 @@ export default {
   },
   apollo: {
     bannerAnimes: {
-      query: () => gql`
-        query (
-          $format: MediaFormat
-          $season: MediaSeason
-          $seasonYear: Int
-          $limit: Int
-        ) {
-          Page(perPage: $limit) {
-            media(
-              sort: POPULARITY_DESC
-              type: ANIME
-              status_not: NOT_YET_RELEASED
-              format: $format
-              isAdult: false
-              season: $season
-              seasonYear: $seasonYear
-            ) {
-              id
-              genres
-              bannerImage
-              format
-              description
-              seasonYear
-              coverImage {
-                extraLarge
-              }
-              title {
-                english
-                romaji
-                native
-              }
-            }
-          }
-        }
-      `,
+      query: BROWSE_BANNER_QUERY,
       variables() {
         return {
           seasonYear: new Date().getFullYear(),
@@ -177,7 +110,7 @@ export default {
       },
     },
     browseFeed: {
-      query: () => gql(browseQuery()),
+      query: browse_feed_query(animeGenres),
       variables() {
         return {
           format: this.anilist_format(),

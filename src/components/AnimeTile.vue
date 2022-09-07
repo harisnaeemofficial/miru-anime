@@ -33,7 +33,7 @@
           "
           :class="{ invisible: contextMenuClosed }"
         >
-          <div class="px-2 py-2 h-full">
+          <div class="px-2 text-black py-2 h-full">
             <ul>
               <li
                 @click.prevent

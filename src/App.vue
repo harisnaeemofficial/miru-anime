@@ -5,7 +5,7 @@
       {{ notificationStore.notification }}
     </div>
   </div>
-  <CollectionView/>
+  <CollectionView v-if="$route.query.collection"/>
 </template>
 <script>
 import notificationStore from "@/stores/notificationStore";
