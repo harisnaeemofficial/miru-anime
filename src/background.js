@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 import { autoUpdater } from "electron-updater"
@@ -84,3 +84,25 @@ if (isDevelopment) {
     })
   }
 }
+autoUpdater.on('update-available', (_event, releaseNotes, releaseName) => {
+  const dialogueOpts = {
+    type: 'info',
+    buttons: ['Ok'],
+    title: 'Update Available',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'A new version download started. The app will be restarted to install the update.'
+  }
+  dialog.showMessageBox(dialogueOpts);
+})
+autoUpdater.on('update-downloaded', () => {
+  const dialogOpts = {
+    type: "info",
+    buttons: ["Install Now", "Install Later"],
+    title: "Application Update",
+    message: process.platform === "win32" ? releaseNotes : releaseName,
+    detail: "A new version of miru-anime is ready to be installed. A restart is required apply the updates."
+ };
+  dialog.showMessageBox(dialogOpts).then((returnValue) => {
+      if (returnValue.response === 0) autoUpdater.quitAndInstall()
+  });
+})
