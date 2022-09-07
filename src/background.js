@@ -94,7 +94,7 @@ autoUpdater.on('update-available', (_event, releaseNotes, releaseName) => {
   }
   dialog.showMessageBox(dialogueOpts);
 })
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', (_event, releaseNotes, releaseName) => {
   const dialogOpts = {
     type: "info",
     buttons: ["Install Now", "Install Later"],
