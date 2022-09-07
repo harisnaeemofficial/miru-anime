@@ -1,6 +1,6 @@
 {
   "name": "miru-anime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "vanelk",
   "description": "An electron app that allows you to watch animes",
   "private": true,
