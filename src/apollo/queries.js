@@ -295,8 +295,11 @@ query (
 `
 
 export const MY_LIST_QUERY = gql`
-query ($idList: [Int]!){
-  watchList: Page {
+query ($idList: [Int]!, $perPage: Int, $page: Int){
+  watchList: Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      hasNextPage
+    }
     media(id_in: $idList){
       id
       genres
@@ -382,7 +385,7 @@ export const COLLECTIONS_QUERIES = {
   }
   `,
   continue_watch: gql`
-   query($perPage: Int, $page: Int,  $banned_formats: [MediaFormat]){
+   query($perPage: Int, $page: Int, $continueWatchIds: [Int]){
     Page(perPage: $perPage, page: $page) {
       pageInfo {
         hasNextPage
@@ -474,10 +477,10 @@ export const COLLECTIONS_QUERIES = {
   `,
   top_airing: gql`
   query($perPage: Int, $page: Int){
-    pageInfo {
-        hasNextPage
-    }
     Page(perPage: $perPage, page: $page) {
+      pageInfo {
+        hasNextPage
+      }
       media(
         sort: SCORE_DESC
         status: RELEASING

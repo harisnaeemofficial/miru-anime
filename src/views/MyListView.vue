@@ -8,10 +8,18 @@
         <AnimeTile :anime="item"/>
       </router-link>
     </GridLayout>
+    <div
+    class="text-center mt-5"
+    ref="sensor"
+    :class="{ invisible: !$apollo.loading }"
+    >
+      Loading...
+    </div>
   </div>
 </DefaultLayout>
 </template>
 <script>
+import scrollMonitor from 'scrollmonitor';
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import GridLayout from '@/layouts/GridLayout.vue';
 import { transformFields } from '@/libs/utils-lib';
@@ -22,7 +30,9 @@ export default {
     data() {
       return {
         watchList: [],
-        listenerId: -1
+        listenerId: -1,
+        page: 1,
+        hasNextPage: false
       }
     },
     apollo: {
@@ -30,16 +40,28 @@ export default {
         query: MY_LIST_QUERY,
         variables(){
           return {
-            idList: watchListStore.watchListIds
+            idList: watchListStore.watchListIds,
+            page: this.page
           }
         },
         update(data){
-          return data.watchList.media.map(transformFields)
+          this.hasNextPage = data.watchList.pageInfo.hasNextPage;
+          return this.watchList.concat(data.watchList.media.map(transformFields));
         }
       }
     },
     mounted(){
       this.listenerId = watchListStore.addListener(() => this.$apollo.queries.watchList.refresh())
+      var elementWatcher = scrollMonitor.create( this.$refs.sensor );
+      elementWatcher.enterViewport(() => {
+        if (this.hasNextPage) {
+          this.$apollo.queries.watchList.fetchMore({
+              variables: {
+                  page: ++this.page,
+              }
+          });
+        }
+      });
     },
     unmounted(){
       watchListStore.removeListener(this.listenerId);
